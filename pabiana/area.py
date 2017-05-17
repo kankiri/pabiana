@@ -5,7 +5,7 @@ The Receiver Interface accepts Requests for remote Triggers.
 Subscription Interfaces are created as defined.
 Subscription Interfaces call defined Reactions.
 The Area name must not contain "_" characters.
-A Publishing Interface is added optionally.
+A Publishing Interface can be added optionally.
 """
 
 import json

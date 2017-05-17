@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*.so
+
+bin/
+build/
+dist/
+lib/
+lib64/
+
+*.log
+*.out
+
+data/
+.venv/
+.dckvenv/
+.idea/

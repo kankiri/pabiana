@@ -20,6 +20,7 @@ import zmq
 config = {}
 _cbks = {}
 _trgs = {}
+goon = True
 
 
 def rslv(interface):
@@ -44,11 +45,9 @@ def reg_name(name):
 	"""
 	Registers this function as remote Trigger with the specified name.
 	"""
-	
 	def decorator(func):
 		_trgs[name] = func
 		return func
-	
 	return decorator
 
 
@@ -81,12 +80,10 @@ def sub_name(name, topic):
 	"""
 	Registers this function as a Reaction to a Subscription with the specified Area name and topic.
 	"""
-	
 	def decorator(func):
 		_cbks[name] = {}
 		_cbks[name][topic] = func
 		return func
-	
 	return decorator
 
 
@@ -129,8 +126,8 @@ def run(own_name, host=None):
 	logging.info('Listening to %s', list(_cbks))
 	
 	try:
-		while True:  # TODO: What happens if > 1 messages
-			socks = dict(poller.poll())
+		while goon:  # TODO: What happens if > 1 messages
+			socks = dict(poller.poll(1000))
 			for sock in socks:
 				if sock == receiver:
 					message = receiver.recv_json()
@@ -140,7 +137,7 @@ def run(own_name, host=None):
 					del message['function']
 					try:
 						_trgs[func_name](**message)
-					except AttributeError:
+					except KeyError:
 						logging.warning('Unavailable Trigger called')
 				else:
 					area_nm = subs[sock]
@@ -152,6 +149,7 @@ def run(own_name, host=None):
 		pass
 	finally:
 		context.destroy()
+		logging.debug('Context destroyed')
 
 
 def create_publisher(own_name, host=None):

@@ -12,7 +12,7 @@ setup(
 	description='A minimalistic framework to build distributed cognitive applications based on ØMQ',
 	long_description=open(path.join(here, 'README.md')).read(),
 	packages=find_packages(),
-	install_requires=['pyzmq'],
-	setup_requires=['pytest-runner'],
-	tests_require=['pytest']
+	install_requires=['pyzmq>=16.0.2'],
+	setup_requires=['pytest-runner>=2.11.1'],
+	tests_require=['pytest>=3.0.7']
 )

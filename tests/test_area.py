@@ -13,6 +13,7 @@ from pabiana.area import create_publisher, rslv, run, send_req
 
 log_str = StringIO()
 
+
 @pytest.fixture(scope='module', autouse=True)
 def interfaces_file(tmpdir_factory):
 	ifs = {

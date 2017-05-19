@@ -9,7 +9,7 @@ import pytest
 import zmq
 
 from pabiana import area
-from pabiana.area import create_publisher, rslv, run, send_req
+from pabiana.area import create_publisher, rslv, run, do_trigger
 
 log_str = StringIO()
 
@@ -47,7 +47,7 @@ def test_basic_area():
 	assert str(type(result)) == '<class \'zmq.sugar.socket.Socket\'>'
 	Thread(target=run, args=('timer',), daemon=True).start()
 	time.sleep(3)
-	send_req('timer', 'test', context=zmq.Context())
+	do_trigger('timer', 'test', context=zmq.Context())
 	time.sleep(3)
 	area.goon = False
 	time.sleep(3)

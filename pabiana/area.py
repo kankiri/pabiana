@@ -164,7 +164,7 @@ def create_publisher(own_name, host=None):
 	return publisher
 
 
-def send_req(area_name, trigger, params={}, context=None):
+def do_trigger(area_name, trigger, params={}, context=None):
 	"""
 	Sends a Request for a remote Trigger to a Receiver Interface.
 	"""
@@ -180,7 +180,7 @@ def send_req(area_name, trigger, params={}, context=None):
 
 def _timer(seconds):
 	time.sleep(seconds)
-	send_req(config['name'] + '-rcv', 'timer', context=zmq.Context())
+	do_trigger(config['name'] + '-rcv', 'timer', context=zmq.Context())
 
 
 def set_timer(seconds):

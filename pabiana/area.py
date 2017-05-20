@@ -27,8 +27,7 @@ def rslv(interface):
 	"""
 	Returns a dictionary containing the ip and the port of the interface.
 	"""
-	path = os.path.join(config['global-path'], 'interfaces.js')
-	with open(path, encoding='utf-8') as f:
+	with open(config['ifs-path'], encoding='utf-8') as f:
 		ifs = json.load(f)
 	return ifs[interface]
 
@@ -164,7 +163,7 @@ def create_publisher(own_name, host=None):
 	return publisher
 
 
-def do_trigger(area_name, trigger, params={}, context=None):
+def trigger(area_name, trigger_name, params={}, context=None):
 	"""
 	Sends a Request for a remote Trigger to a Receiver Interface.
 	"""
@@ -172,7 +171,7 @@ def do_trigger(area_name, trigger, params={}, context=None):
 	context = context or zmq.Context.instance()
 	requester = context.socket(zmq.REQ)
 	requester.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
-	params['function'] = trigger
+	params['function'] = trigger_name
 	requester.send_json(params)
 	requester.recv()
 	requester.close()
@@ -180,7 +179,7 @@ def do_trigger(area_name, trigger, params={}, context=None):
 
 def _timer(seconds):
 	time.sleep(seconds)
-	do_trigger(config['name'] + '-rcv', 'timer', context=zmq.Context())
+	trigger(config['name'] + '-rcv', 'timer', context=zmq.Context())
 
 
 def set_timer(seconds):
@@ -198,6 +197,8 @@ def __init():
 	else:
 		config['main-path'] = os.getcwd()
 		config['global-path'] = config['main-path']
-
+	config['ifs-path'] = os.path.join(config['main-path'], 'interfaces.json')
+	if not os.path.isfile(config['ifs-path']):
+		config['ifs-path'] = os.path.join(config['global-path'], 'interfaces.json')
 
 __init()

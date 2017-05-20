@@ -90,6 +90,8 @@ def sub_name(name, topic):
 
 
 def _decoder(rcvd):
+	if len(rcvd) == 1:
+		rcvd = [''] + rcvd
 	[topic, message] = [x.decode('utf-8') for x in rcvd]
 	message = json.loads(message)
 	return [topic, message]

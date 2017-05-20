@@ -186,7 +186,7 @@ def set_timer(seconds):
 	"""
 	Sends a Request to the 'timer'-Trigger of this Area, after the specified number of seconds.
 	"""
-	Thread(target=_timer, args=(seconds,)).start()
+	Thread(target=_timer, args=(seconds,), daemon=True).start()
 
 
 def __init():

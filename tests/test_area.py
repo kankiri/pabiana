@@ -34,8 +34,19 @@ def interfaces_file(tmpdir_factory):
 	area.config['ifs-path'] = path
 
 
-def teardown_module(module):
+def truncate():
 	print(log_stream.getvalue())
+	log_stream.truncate()
+	log_stream.seek(0)
+
+
+def sleeper(term):
+	cntr = 0
+	while term not in log_stream.getvalue() and cntr < 50:
+		time.sleep(0.1)
+		cntr = cntr + 1
+	time.sleep(0.1)
+	return cntr < 30
 
 
 def test_rslv():
@@ -48,21 +59,22 @@ def test_rslv():
 
 
 def test_basic_area():
+	truncate()
 	result = create_publisher('timer')
 	assert str(type(result)) == '<class \'zmq.sugar.socket.Socket\'>'
 	Thread(target=run, args=('timer',), kwargs={'timeout':100}, daemon=True).start()
-	while 'Listening to' not in log_stream.getvalue():
-		time.sleep(0.1)
-	time.sleep(0.1)
+	assert sleeper('Listening to')
 	trigger('timer', 'test', context=zmq.Context())
-	while 'Trigger test of timer' not in log_stream.getvalue():
-		time.sleep(0.1)
-	time.sleep(0.1)
+	assert sleeper('Trigger test of timer')
 	area.goon = False
-	time.sleep(1)
+	assert sleeper('Context destroyed')
 	assert 'Waiting for Connections on 127.0.0.1:18282' in log_stream.getvalue()
 	assert 'Receiver Message: {\'function\': \'test\'}' in log_stream.getvalue()
 	assert 'Unavailable Trigger called' in log_stream.getvalue()
+
+
+def teardown_module(module):
+	print(log_stream.getvalue())
 
 
 logging.basicConfig(

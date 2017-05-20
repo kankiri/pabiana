@@ -97,7 +97,7 @@ def _decoder(rcvd):
 	return [topic, message]
 
 
-def run(own_name, host=None):
+def run(own_name, host=None, delay=0, timeout=1000):
 	"""
 	Starts a new Pabiana Area.
 	Use Control-C to stop.
@@ -128,7 +128,7 @@ def run(own_name, host=None):
 	
 	try:
 		while goon:  # TODO: What happens if > 1 messages
-			socks = dict(poller.poll(1000))
+			socks = dict(poller.poll(timeout))
 			for sock in socks:
 				if sock == receiver:
 					message = receiver.recv_json()
@@ -146,6 +146,8 @@ def run(own_name, host=None):
 					logging.debug('Subscriber Message from %s: %s/%s', area_nm, topic, message)
 					key = next(key for key in _cbks[area_nm] if topic.startswith(key))
 					_cbks[area_nm][key](**message)
+			if delay:
+				time.sleep(delay)
 	except KeyboardInterrupt:
 		pass
 	finally:
@@ -177,6 +179,7 @@ def trigger(area_name, trigger_name, params={}, context=None):
 	requester.send_json(params)
 	requester.recv()
 	requester.close()
+	logging.debug('Trigger %s of %s called', trigger_name, area_name)
 
 
 def _timer(seconds):

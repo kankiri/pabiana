@@ -132,7 +132,7 @@ def run(own_name, host=None, delay=0, timeout=1000):
 		global goon
 		goon = True
 		update = False
-		if own_name in _cbks and 'update' in _cbks[own_name]:
+		if 'internal' in _cbks and 'update' in _cbks['internal']:
 			update = True
 		while goon:  # TODO: What happens if > 1 messages
 			socks = dict(poller.poll(timeout))

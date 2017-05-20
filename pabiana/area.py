@@ -117,6 +117,8 @@ def run(own_name, host=None, delay=0, timeout=1000):
 	# Subscription Interfaces
 	subs = {}
 	for area_nm in _cbks:
+		if area_nm == 'internal':
+			continue
 		ip = rslv(area_nm + '-pub')
 		subscriber = context.socket(zmq.SUB)
 		subscriber.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))

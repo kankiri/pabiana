@@ -109,7 +109,7 @@ def run(own_name, host=None, delay=0, timeout=1000):
 	# Receiver Interface
 	ip = rslv(own_name + '-rcv')
 	host = host or ip['ip']
-	receiver = context.socket(zmq.REP)
+	receiver = context.socket(zmq.PULL)
 	receiver.bind('tcp://{}:{}'.format(host, ip['port']))
 	poller.register(receiver, zmq.POLLIN)
 	logging.info('Waiting for Connections on %s:%s', host, ip['port'])
@@ -134,13 +134,12 @@ def run(own_name, host=None, delay=0, timeout=1000):
 		update = False
 		if 'internal' in _cbks and 'update' in _cbks['internal']:
 			update = True
-		while goon:  # TODO: What happens if > 1 messages
+		while goon:
 			socks = dict(poller.poll(timeout))
 			for sock in socks:
 				if sock == receiver:
 					message = receiver.recv_json()
 					logging.debug('Receiver Message: %s', message)
-					receiver.send(b'')
 					func_name = message['function']
 					del message['function']
 					try:
@@ -160,7 +159,7 @@ def run(own_name, host=None, delay=0, timeout=1000):
 	except KeyboardInterrupt:
 		pass
 	finally:
-		context.destroy()
+		context.destroy(linger=2000)
 		logging.debug('Context destroyed')
 
 
@@ -182,12 +181,10 @@ def trigger(area_name, trigger_name, params={}, context=None):
 	"""
 	ip = rslv(area_name + '-rcv')
 	context = context or zmq.Context.instance()
-	requester = context.socket(zmq.REQ)
+	requester = context.socket(zmq.PUSH)
 	requester.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
-	requester.setsockopt(zmq.LINGER, 0)
 	params['function'] = trigger_name
 	requester.send_json(params)
-	requester.recv()
 	requester.close()
 	logging.debug('Trigger %s of %s called', trigger_name, area_name)
 
@@ -207,13 +204,12 @@ def set_timer(seconds):
 def __init():
 	config['name'] = None
 	if sys.argv[0]:
-		config['main-path'] = os.path.dirname(os.path.realpath(sys.argv[0]))
-		config['global-path'] = os.path.dirname(config['main-path'])
+		path = os.path.dirname(os.path.realpath(sys.argv[0]))
+		config['ifs-path'] = os.path.join(path, 'interfaces.json')
+		if not os.path.isfile(config['ifs-path']):
+			path = os.path.dirname(path)
+			config['ifs-path'] = os.path.join(path, 'interfaces.json')
 	else:
-		config['main-path'] = os.getcwd()
-		config['global-path'] = config['main-path']
-	config['ifs-path'] = os.path.join(config['main-path'], 'interfaces.json')
-	if not os.path.isfile(config['ifs-path']):
-		config['ifs-path'] = os.path.join(config['global-path'], 'interfaces.json')
+		config['ifs-path'] = os.path.join(os.getcwd(), 'interfaces.json')
 
 __init()

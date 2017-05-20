@@ -29,8 +29,6 @@ def interfaces_file(tmpdir_factory):
 	path = str(tmpdir_factory.mktemp('ifs').join('interfaces.json'))
 	with open(path, 'w') as f:
 		json.dump(ifs, f)
-	area.config['main-path'] = os.path.dirname(path)
-	area.config['global-path'] = os.path.dirname(path)
 	area.config['ifs-path'] = path
 
 

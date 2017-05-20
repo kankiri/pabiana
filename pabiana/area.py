@@ -127,6 +127,11 @@ def run(own_name, host=None, delay=0, timeout=1000):
 	logging.info('Listening to %s', list(_cbks))
 	
 	try:
+		global goon
+		goon = True
+		update = False
+		if own_name in _cbks and 'update' in _cbks[own_name]:
+			update = True
 		while goon:  # TODO: What happens if > 1 messages
 			socks = dict(poller.poll(timeout))
 			for sock in socks:
@@ -146,6 +151,8 @@ def run(own_name, host=None, delay=0, timeout=1000):
 					logging.debug('Subscriber Message from %s: %s/%s', area_nm, topic, message)
 					key = next(key for key in _cbks[area_nm] if topic.startswith(key))
 					_cbks[area_nm][key](**message)
+			if update:
+				_cbks[own_name]['update']()
 			if delay:
 				time.sleep(delay)
 	except KeyboardInterrupt:
@@ -175,6 +182,7 @@ def trigger(area_name, trigger_name, params={}, context=None):
 	context = context or zmq.Context.instance()
 	requester = context.socket(zmq.REQ)
 	requester.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
+	requester.setsockopt(zmq.LINGER, 0)
 	params['function'] = trigger_name
 	requester.send_json(params)
 	requester.recv()

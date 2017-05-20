@@ -152,7 +152,7 @@ def run(own_name, host=None, delay=0, timeout=1000):
 					key = next(key for key in _cbks[area_nm] if topic.startswith(key))
 					_cbks[area_nm][key](**message)
 			if update:
-				_cbks[own_name]['update']()
+				_cbks['internal']['update']()
 			if delay:
 				time.sleep(delay)
 	except KeyboardInterrupt:

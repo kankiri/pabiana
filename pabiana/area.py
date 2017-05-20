@@ -179,7 +179,7 @@ def trigger(area_name, trigger_name, params={}, context=None):
 
 def _timer(seconds):
 	time.sleep(seconds)
-	trigger(config['name'] + '-rcv', 'timer', context=zmq.Context())
+	trigger(config['name'], 'timer', context=zmq.Context())
 
 
 def set_timer(seconds):

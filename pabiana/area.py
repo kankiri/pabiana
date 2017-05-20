@@ -12,7 +12,6 @@ import json
 import logging
 import os
 import sys
-from threading import Thread
 import time
 
 import zmq
@@ -175,30 +174,19 @@ def create_publisher(own_name, host=None):
 	return publisher
 
 
-def trigger(area_name, trigger_name, params={}, context=None):
+def trigger(area_name, trigger_name, params={}, context=zmq.Context.instance()):
 	"""
 	Sends a Request for a remote Trigger to a Receiver Interface.
 	"""
 	ip = rslv(area_name + '-rcv')
-	context = context or zmq.Context.instance()
+	if type(context) is str:
+		context = zmq.Context()
 	requester = context.socket(zmq.PUSH)
 	requester.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
 	params['function'] = trigger_name
 	requester.send_json(params)
 	requester.close()
 	logging.debug('Trigger %s of %s called', trigger_name, area_name)
-
-
-def _timer(seconds):
-	time.sleep(seconds)
-	trigger(config['name'], 'timer', context=zmq.Context())
-
-
-def set_timer(seconds):
-	"""
-	Sends a Request to the 'timer'-Trigger of this Area, after the specified number of seconds.
-	"""
-	Thread(target=_timer, args=(seconds,), daemon=True).start()
 
 
 def __init():

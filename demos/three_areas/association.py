@@ -16,24 +16,6 @@ context = {
 	'sh-procedure': None
 }
 
-
-def morning():
-	return datetime.now().hour < 12
-
-
-def temp_range(name):
-	if name == 'ice':
-		return -100, 0
-	elif name == 'cold':
-		return 0, 15
-	elif name == 'good':
-		return 15, 25
-	elif name == 'hot':
-		return 25, 32
-	else:
-		return 32, 100
-
-
 # Triggers
 @register
 def shutdown():
@@ -100,6 +82,23 @@ def internal_update():
 			trigger('smarthome', 'lower_temp')
 		elif context['sh-procedure']:
 			trigger('smarthome', 'keep_temp')
+
+
+def morning():
+	return datetime.now().hour < 12
+
+
+def temp_range(name):
+	if name == 'ice':
+		return -100, 0
+	elif name == 'cold':
+		return 0, 15
+	elif name == 'good':
+		return 15, 25
+	elif name == 'hot':
+		return 25, 32
+	else:
+		return 32, 100
 
 
 if __name__ == '__main__':

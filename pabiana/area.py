@@ -96,7 +96,7 @@ def _decoder(rcvd):
 	return [topic, message]
 
 
-def run(own_name, host=None, delay=0, timeout=1000):
+def run(own_name, host=None, timeout=1000):
 	"""
 	Starts a new Pabiana Area.
 	Use Control-C to stop.
@@ -127,12 +127,15 @@ def run(own_name, host=None, delay=0, timeout=1000):
 		subs[subscriber] = area_nm
 	logging.info('Listening to %s', list(_cbks))
 	
+	# Runner Initialization
+	global goon
+	goon = True
+	update = False
+	if 'internal' in _cbks and 'update' in _cbks['internal']:
+		update = True
+	
+	# Runner
 	try:
-		global goon
-		goon = True
-		update = False
-		if 'internal' in _cbks and 'update' in _cbks['internal']:
-			update = True
 		while goon:
 			socks = dict(poller.poll(timeout))
 			for sock in socks:
@@ -151,10 +154,8 @@ def run(own_name, host=None, delay=0, timeout=1000):
 					logging.debug('Subscriber Message from %s: %s/%s', area_nm, topic, message)
 					key = next(key for key in _cbks[area_nm] if topic.startswith(key))
 					_cbks[area_nm][key](**message)
-			if update and len(socks):
+			if update:
 				_cbks['internal']['update']()
-			if delay:
-				time.sleep(delay)
 	except KeyboardInterrupt:
 		pass
 	finally:

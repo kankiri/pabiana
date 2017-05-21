@@ -34,6 +34,12 @@ def temp_range(name):
 		return 32, 100
 
 
+# Triggers
+@register
+def shutdown():
+	area.goon = False
+
+
 # Reactions
 @subscribe
 def getter(current):
@@ -94,12 +100,6 @@ def internal_update():
 			trigger('smarthome', 'lower_temp')
 		elif context['sh-procedure']:
 			trigger('smarthome', 'keep_temp')
-
-
-# Triggers
-@register
-def shutdown():
-	area.goon = False
 
 
 if __name__ == '__main__':

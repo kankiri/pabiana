@@ -16,15 +16,6 @@ context = {
 }
 
 
-# Reactions
-@subscribe
-def internal_update():
-	context['temp'] = context['temp'] + context['procedure']
-	if context['procedure']:
-		logging.info('Home Temperature: %s', context['temp'])
-	publisher.send_json({'temperature':context['temp'], 'open':context['window'], 'procedure':context['procedure']})
-
-
 # Triggers
 @register
 def increase_temp():
@@ -63,6 +54,15 @@ def timer(seconds):
 @register
 def shutdown():
 	area.goon = False
+
+
+# Reactions
+@subscribe
+def internal_update():
+	context['temp'] = context['temp'] + context['procedure']
+	if context['procedure']:
+		logging.info('Home Temperature: %s', context['temp'])
+	publisher.send_json({'temperature':context['temp'], 'open':context['window'], 'procedure':context['procedure']})
 
 
 if __name__ == '__main__':

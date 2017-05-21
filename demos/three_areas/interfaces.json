@@ -1,0 +1,34 @@
+{
+	"getter-rcv": {
+		"ip": "127.0.0.1",
+		"port": 54321
+	},
+	"getter-pub": {
+		"ip": "127.0.0.1",
+		"port": 54320
+	},
+	"console-rcv": {
+		"ip": "127.0.0.1",
+		"port": 54319
+	},
+	"console-pub": {
+		"ip": "127.0.0.1",
+		"port": 54318
+	},
+	"association-rcv": {
+		"ip": "127.0.0.1",
+		"port": 54317
+	},
+	"association-pub": {
+		"ip": "127.0.0.1",
+		"port": 54316
+	},
+	"smarthome-rcv": {
+		"ip": "127.0.0.1",
+		"port": 54315
+	},
+	"smarthome-pub": {
+		"ip": "127.0.0.1",
+		"port": 54314
+	}
+}

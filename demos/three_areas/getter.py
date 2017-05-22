@@ -2,8 +2,6 @@
 
 import json
 import logging
-from threading import Thread
-import time
 
 from pabiana import area
 from pabiana.area import create_publisher, register, run, subscribe, trigger
@@ -14,15 +12,7 @@ publisher = None
 
 # Triggers
 @register
-def timer(seconds):
-	def _timer():
-		time.sleep(seconds)
-		trigger(NAME, 'timer', {'seconds':seconds}, context='new')
-	Thread(target=_timer, daemon=True).start()
-
-
-@register
-def status():
+def pulse():
 	pass
 
 
@@ -55,6 +45,5 @@ if __name__ == '__main__':
 		level=logging.DEBUG
 	)
 	
-	timer(60)
 	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
-	run(own_name=NAME, host='0.0.0.0')
+	run(own_name=NAME, host='0.0.0.0', timeout=60000)

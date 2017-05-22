@@ -9,15 +9,7 @@ NAME = 'console'
 publisher = None
 
 
-if __name__ == '__main__':
-	logging.basicConfig(
-		format='%(asctime)s %(levelname)s %(message)s',
-		datefmt='%Y-%m-%d %H:%M:%S',
-		level=logging.DEBUG
-	)
-	
-	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
-	
+def main():
 	try:
 		while True:
 			s = input('--> ').lower()
@@ -41,3 +33,14 @@ if __name__ == '__main__':
 		trigger('association', 'shutdown')
 		trigger('smarthome', 'shutdown')
 		trigger('getter', 'shutdown')
+
+
+if __name__ == '__main__':
+	logging.basicConfig(
+		format='%(asctime)s %(levelname)s %(message)s',
+		datefmt='%Y-%m-%d %H:%M:%S',
+		level=logging.DEBUG
+	)
+	
+	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
+	main()

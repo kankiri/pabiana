@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import logging
+import time
 
 from pabiana import area
 from pabiana.area import register, run, subscribe, trigger
@@ -15,6 +16,7 @@ context = {
 	'out-temp': 'good',
 	'sh-procedure': None
 }
+
 
 # Triggers
 @register
@@ -58,7 +60,7 @@ def internal_update():
 		trigger('smarthome', 'keep_temp')
 		return
 	if context['out-temp'] is None:
-		trigger('getter', 'status')
+		trigger('getter', 'pulse')
 		return
 	if context['window-open']:
 		if context['to-bed'] or not context['at-home'] or not morning():
@@ -82,6 +84,8 @@ def internal_update():
 			trigger('smarthome', 'lower_temp')
 		elif context['sh-procedure']:
 			trigger('smarthome', 'keep_temp')
+	
+	time.sleep(5)  # delay for debugging
 
 
 def morning():
@@ -108,4 +112,4 @@ if __name__ == '__main__':
 		level=logging.DEBUG
 	)
 	
-	run(own_name=NAME, host='0.0.0.0', delay=5)
+	run(own_name=NAME, host='0.0.0.0')

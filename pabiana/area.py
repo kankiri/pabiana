@@ -12,7 +12,6 @@ import json
 import logging
 import os
 import sys
-import time
 
 import zmq
 
@@ -49,17 +48,6 @@ def reg_name(name):
 	return decorator
 
 
-def split_func_name(name):
-	pos = name.find('_')
-	if pos == -1:
-		pos = len(name)
-	area_name = name[:pos]
-	topic = name[pos + 1:]
-	topic = topic.replace('_', '.')
-	topic = topic.replace('𒐀', '-')
-	return area_name, topic
-
-
 def subscribe(func):
 	"""
 	Registers this function as a Reaction to a Subscription.
@@ -68,7 +56,7 @@ def subscribe(func):
 	Within the topic, "_" characters are replaced with topic separators ("." characters).
 	Within the topic, "𒐀" characters are replaced with "-" characters.
 	"""
-	area_name, topic = split_func_name(func.__name__)
+	area_name, topic = _split_func_name(func.__name__)
 	_cbks[area_name] = {}
 	_cbks[area_name][topic] = func
 	return func
@@ -88,12 +76,31 @@ def sub_name(name, topic):
 # TODO: Add functions to subscribe/unsubscribe
 
 
-def _decoder(rcvd):
-	if len(rcvd) == 1:
-		rcvd = [b''] + rcvd
-	[topic, message] = [x.decode('utf-8') for x in rcvd]
-	message = json.loads(message)
-	return [topic, message]
+def create_publisher(own_name, host=None):
+	"""
+	Creates and returns an optional Publishing Interface.
+	"""
+	ip = rslv(own_name + '-pub')
+	host = host or ip['ip']
+	context = zmq.Context.instance()
+	publisher = context.socket(zmq.PUB)
+	publisher.bind('tcp://{}:{}'.format(host, ip['port']))
+	return publisher
+
+
+def trigger(area_name, trigger_name, params={}, context=zmq.Context.instance()):
+	"""
+	Sends a Request for a remote Trigger to a Receiver Interface.
+	"""
+	ip = rslv(area_name + '-rcv')
+	if type(context) is str:
+		context = zmq.Context()
+	requester = context.socket(zmq.PUSH)
+	requester.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
+	params['function'] = trigger_name
+	requester.send_json(params)
+	requester.close()
+	logging.debug('Trigger %s of %s called', trigger_name, area_name)
 
 
 def run(own_name, host=None, timeout=1000):
@@ -163,31 +170,23 @@ def run(own_name, host=None, timeout=1000):
 		logging.debug('Context destroyed')
 
 
-def create_publisher(own_name, host=None):
-	"""
-	Creates and returns an optional Publishing Interface.
-	"""
-	ip = rslv(own_name + '-pub')
-	host = host or ip['ip']
-	context = zmq.Context.instance()
-	publisher = context.socket(zmq.PUB)
-	publisher.bind('tcp://{}:{}'.format(host, ip['port']))
-	return publisher
+def _split_func_name(name):
+	pos = name.find('_')
+	if pos == -1:
+		pos = len(name)
+	area_name = name[:pos]
+	topic = name[pos + 1:]
+	topic = topic.replace('_', '.')
+	topic = topic.replace('𒐀', '-')
+	return area_name, topic
 
 
-def trigger(area_name, trigger_name, params={}, context=zmq.Context.instance()):
-	"""
-	Sends a Request for a remote Trigger to a Receiver Interface.
-	"""
-	ip = rslv(area_name + '-rcv')
-	if type(context) is str:
-		context = zmq.Context()
-	requester = context.socket(zmq.PUSH)
-	requester.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
-	params['function'] = trigger_name
-	requester.send_json(params)
-	requester.close()
-	logging.debug('Trigger %s of %s called', trigger_name, area_name)
+def _decoder(rcvd):
+	if len(rcvd) == 1:
+		rcvd = [b''] + rcvd
+	[topic, message] = [x.decode('utf-8') for x in rcvd]
+	message = json.loads(message)
+	return [topic, message]
 
 
 def __init():

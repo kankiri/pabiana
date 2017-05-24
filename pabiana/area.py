@@ -15,10 +15,11 @@ import sys
 
 import zmq
 
-config = {}
 _cbks = {}
 _trgs = {}
+_tmot = None
 goon = True
+config = {}
 
 
 def rslv(interface):
@@ -73,7 +74,14 @@ def sub_name(name, topic):
 	return decorator
 
 
-# TODO: Add functions to subscribe/unsubscribe
+def timeout(func):
+	"""
+	"""
+	_tmot = func
+	return func
+
+
+# TODO: Add functions to subscribe/unsubscribe?
 
 
 def create_publisher(own_name, host=None):
@@ -103,7 +111,7 @@ def trigger(area_name, trigger_name, params={}, context=zmq.Context.instance()):
 	logging.debug('Trigger %s of %s called', trigger_name, area_name)
 
 
-def run(own_name, host=None, timeout=1000):
+def run(own_name, host=None, timeout_ms=1000):
 	"""
 	Starts a new Pabiana Area.
 	Use Control-C to stop.
@@ -123,8 +131,6 @@ def run(own_name, host=None, timeout=1000):
 	# Subscription Interfaces
 	subs = {}
 	for area_nm in _cbks:
-		if area_nm == 'internal':
-			continue
 		ip = rslv(area_nm + '-pub')
 		subscriber = context.socket(zmq.SUB)
 		subscriber.connect('tcp://{}:{}'.format(ip['ip'], ip['port']))
@@ -137,14 +143,11 @@ def run(own_name, host=None, timeout=1000):
 	# Runner Initialization
 	global goon
 	goon = True
-	update = False
-	if 'internal' in _cbks and 'update' in _cbks['internal']:
-		update = True
 	
 	# Runner
 	try:
 		while goon:
-			socks = dict(poller.poll(timeout))
+			socks = dict(poller.poll(timeout_ms))
 			for sock in socks:
 				if sock == receiver:
 					message = receiver.recv_json()
@@ -161,8 +164,8 @@ def run(own_name, host=None, timeout=1000):
 					logging.debug('Subscriber Message from %s: %s/%s', area_nm, topic, message)
 					key = next(key for key in _cbks[area_nm] if topic.startswith(key))
 					_cbks[area_nm][key](**message)
-			if update:
-				_cbks['internal']['update']()
+			if _tmot:
+				_tmot()
 	except KeyboardInterrupt:
 		pass
 	finally:

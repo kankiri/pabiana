@@ -64,4 +64,4 @@ if __name__ == '__main__':
 	)
 	
 	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
-	run(own_name=NAME, host='0.0.0.0', timeout=60000)
+	run(own_name=NAME, host='0.0.0.0', timeout_ms=60000)

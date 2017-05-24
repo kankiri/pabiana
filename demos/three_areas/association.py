@@ -5,7 +5,7 @@ import logging
 import time
 
 from pabiana import area
-from pabiana.area import register, run, subscribe, trigger
+from pabiana.area import register, run, subscribe, timeout, trigger
 
 NAME = 'association'
 context = {
@@ -54,8 +54,8 @@ def smarthome(temperature, open, procedure):
 	context['sh-procedure'] = procedure
 
 
-@subscribe
-def internal_update():
+@timeout
+def update():
 	if context['in-temp'] is None:
 		trigger('smarthome', 'keep_temp')
 		return

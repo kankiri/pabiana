@@ -76,6 +76,7 @@ def sub_name(name, topic):
 
 def timeout(func):
 	"""
+	This function will be called at the end of every loop (at least every timeout)
 	"""
 	_tmot = func
 	return func

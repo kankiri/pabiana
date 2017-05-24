@@ -60,7 +60,7 @@ def test_basic_area():
 	truncate()
 	result = create_publisher('timer')
 	assert str(type(result)) == '<class \'zmq.sugar.socket.Socket\'>'
-	Thread(target=run, args=('timer',), kwargs={'timeout':100}, daemon=True).start()
+	Thread(target=run, args=('timer',), kwargs={'timeout_ms':100}, daemon=True).start()
 	assert sleeper('Listening to')
 	trigger('timer', 'test', context=zmq.Context())
 	assert sleeper('Trigger test of timer')

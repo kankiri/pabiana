@@ -4,7 +4,7 @@ import logging
 import time
 
 from pabiana import area
-from pabiana.area import create_publisher, register, run, subscribe, trigger
+from pabiana.area import create_publisher, register, run, timeout
 
 NAME = 'smarthome'
 publisher = None
@@ -47,9 +47,8 @@ def shutdown():
 	area.goon = False
 
 
-# Reactions
-@subscribe
-def internal_update():
+@timeout
+def update():
 	context['temp'] = context['temp'] + context['procedure']
 	if context['procedure']:
 		logging.info('Home Temperature: %s', context['temp'])

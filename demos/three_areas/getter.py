@@ -4,7 +4,7 @@ import json
 import logging
 
 from pabiana import area
-from pabiana.area import create_publisher, register, run, subscribe, trigger
+from pabiana.area import create_publisher, register, run, timeout
 
 NAME = 'getter'
 publisher = None
@@ -21,9 +21,8 @@ def shutdown():
 	area.goon = False
 
 
-# Reactions
-@subscribe
-def internal_update():
+@timeout
+def update():
 	temp = 5
 	if temp < 0:
 		data = {'current': 'ice'}

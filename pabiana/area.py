@@ -78,6 +78,7 @@ def timeout(func):
 	"""
 	This function will be called at the end of every loop (at least every timeout)
 	"""
+	global _tmot
 	_tmot = func
 	return func
 

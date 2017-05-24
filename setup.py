@@ -14,5 +14,6 @@ setup(
 	packages=find_packages(),
 	install_requires=['pyzmq>=16.0.2'],
 	setup_requires=['pytest-runner>=2.11.1'],
-	tests_require=['pytest>=3.0.7']
+	tests_require=['pytest>=3.0.7'],
+	zip_safe= False
 )

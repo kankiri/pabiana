@@ -12,7 +12,7 @@ Pabiana can be used to develop home automation systems, intelligent assistants o
 
 ## Installation
 
-Pabiana is only tested against Python ≥ 3.4, but might also work with other versions.
+Pabiana is only tested against Python ≥ 3.5, but might also work with other versions.
 To integrate Pabiana in your projects, you can install it with:
 
     pip install --upgrade git+https://github.com/kankiri/pabiana

@@ -26,12 +26,12 @@ def shutdown():
 
 # Reactions
 @subscribe
-def getter(current):
+def getter(current, **kwargs):
 	context['out-temp'] = current
 
 
 @subscribe
-def console_input(signal):
+def console_input(signal, **kwargs):
 	if signal == 'sleep':
 		context['to-bed'] = True
 		context['at-home'] = True
@@ -48,7 +48,7 @@ def console_input(signal):
 
 
 @subscribe
-def smarthome(temperature, open, procedure):
+def smarthome(temperature, open, procedure, **kwargs):
 	context['in-temp'] = temperature
 	context['window-open'] = open
 	context['sh-procedure'] = procedure

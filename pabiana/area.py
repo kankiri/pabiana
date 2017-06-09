@@ -165,7 +165,7 @@ def run(own_name, host=None, timeout_ms=1000):
 					[topic, message] = _decoder(sock.recv_multipart())
 					logging.debug('Subscriber Message from %s: %s/%s', area_nm, topic, message)
 					key = next(key for key in _cbks[area_nm] if topic.startswith(key))
-					_cbks[area_nm][key](**message)
+					_cbks[area_nm][key](topic=topic, **message)
 			if _tmot:
 				_tmot()
 	except KeyboardInterrupt:

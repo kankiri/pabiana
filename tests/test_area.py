@@ -1,7 +1,6 @@
 from io import StringIO
 import json
 import logging
-import os
 from threading import Thread
 import time
 

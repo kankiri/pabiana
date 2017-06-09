@@ -16,22 +16,21 @@ def trgr_set(recv_name, dttime):
 	dttime = datetime.strptime(dttime, '%Y-%m-%d %H:%M:%S')
 	dttime = dttime.replace(second=0, microsecond=0)
 	try:
-		context['timers'][dttime].append(recv_name)
+		context['timers'][dttime].add(recv_name)
 	except KeyError:
-		context['timers'][dttime] = [recv_name]
+		context['timers'][dttime] = {recv_name}
 
 
 @timeout
 def update():
 	now = datetime.utcnow()
-	for key in sorted(context['timers']):
-		if key > now:
-			break
-		for recv_name in context['timers'][key]:
-			publisher.send_multipart([recv_name.encode('utf-8'), '{}'.encode('utf-8')])
-		del context['timers'][key]
+	for key in context['timers']:
+		if now > key:
+			for recv_name in context['timers'][key]:
+				publisher.send_multipart([recv_name.encode('utf-8'), '{}'.encode('utf-8')])
+			del context['timers'][key]
 
 
 if __name__ == '__main__':
-	publisher = create_publisher(own_name=sys.argv[1], host='0.0.0.0')
+	publisher = create_publisher(own_name='timer', host='0.0.0.0')
 	run(own_name='timer', host='0.0.0.0', timeout_ms=10000)

@@ -5,7 +5,7 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
 	name='Pabiana',
-	version='0.0.4',
+	version='0.0.5',
 	url='https://github.com/kankiri/pabiana',
 	author='Alexander Schöberl',
 	author_email='alexander.schoeberl@gmail.com',

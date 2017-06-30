@@ -15,7 +15,6 @@ from pabiana import node
 
 step = 0
 context = {}
-interfaces = None
 
 _triggers = {}
 _trgs_rcvd = {}
@@ -52,16 +51,24 @@ def pulse(func):
 	return func
 
 
+def schedule(triggers_received):
+	"""
+	Calls every trigger from triggers_received collection with its stored parameters.
+	"""
+	for func in triggers_received:
+		message = _trgs_rcvd[func]
+		try:
+			func(**message)
+		except TypeError:
+			logging.warning('Trigger Parameter Error')
+
+
 def _pulse_callback():
 	global step
 	step += 1
-	for func_name in _trgs_rcvd:
-		message = _trgs_rcvd[func_name]
-		try:
-			_triggers[func_name](**message)
-		except KeyError:
-			logging.warning('Unavailable Trigger called')
-	_trgs_rcvd.clear()
+	if _trgs_rcvd:
+		schedule(_trgs_rcvd)
+		_trgs_rcvd.clear()
 	if _received:
 		_change_function()
 		global _received
@@ -81,7 +88,14 @@ def _subscriber_callback(area_name, topic, message):
 
 
 def _trigger_callback(func_name, message):
-	_trgs_rcvd[func_name] = message
+	try:
+		func = _triggers[func_name]
+		_trgs_rcvd[func] = message
+	except KeyError:
+		if func_name == 'shutdown':
+			node.goon = False
+			return
+		logging.warning('Unavailable Trigger called')
 
 
 def subscribe(subscriptions, pulse_name, pulse_topic):
@@ -98,14 +112,21 @@ def subscribe(subscriptions, pulse_name, pulse_topic):
 	node.trigger_cb = _trigger_callback
 
 
+def autoloop(func=None, params=None):
+	if func:
+		_trgs_rcvd[func] = params
+	else:
+		global _received
+		_received = True
+
+
 def load_interfaces(path):
 	with open(path, encoding='utf-8') as f:
-		global interfaces
-		interfaces = json.load(f)
+		node.interfaces = json.load(f)
 
 
 def rslv(interface):
 	"""
 	Returns a dictionary containing the ip and the port of the interface.
 	"""
-	return interfaces[interface]
+	return node.interfaces[interface]

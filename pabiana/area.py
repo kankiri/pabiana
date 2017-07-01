@@ -13,13 +13,13 @@ import logging
 
 from pabiana import node
 
-step = 0
+clock = 0
+demand = {}
 context = {}
 
 _triggers = {}
-_trgs_rcvd = {}
 _pulse_name = None
-_pulse_topic = None
+_pulse_slot = None
 _received = False
 _change_function = None
 _pulse_function = None
@@ -33,7 +33,7 @@ def register(func):
 	return func
 
 
-def context_change(func):
+def alteration(func):
 	"""
 	Registers this function to be called when context changes.
 	"""
@@ -51,38 +51,52 @@ def pulse(func):
 	return func
 
 
-def schedule(triggers_received):
+def scheduling(func):
+	old = call_triggers
+	
+	def schedule():
+		func()
+		old()
+	
+	global call_triggers
+	call_triggers = schedule
+	return func
+
+
+def call_triggers():
 	"""
 	Calls every trigger from triggers_received collection with its stored parameters.
 	"""
-	for func in triggers_received:
-		message = _trgs_rcvd[func]
+	for func in demand:
 		try:
-			func(**message)
+			func(**demand[func])
 		except TypeError:
 			logging.warning('Trigger Parameter Error')
 
 
 def _pulse_callback():
-	global step
-	step += 1
-	if _trgs_rcvd:
-		schedule(_trgs_rcvd)
-		_trgs_rcvd.clear()
-	if _received:
-		_change_function()
+	global clock
+	clock += 1
+	if demand:
+		call_triggers(demand)
+		demand.clear()
+	if _received and _change_function:
 		global _received
 		_received = False
+		_change_function()
 	if _pulse_function:
 		_pulse_function()
 
 
-def _subscriber_callback(area_name, topic, message):
-	if area_name == _pulse_name and topic == _pulse_topic:
+def _subscriber_callback(area_name, slot, message):
+	if area_name == _pulse_name and slot == _pulse_slot:
 		_pulse_callback()
 	else:
-		context[area_name][topic] = step
-		context[area_name][topic+'-data'] = message
+		context[area_name][slot] = clock
+		try:
+			context[area_name][slot + '-data'].update(message)
+		except KeyError:
+			context[area_name][slot + '-data'] = message
 		global _received
 		_received = True
 
@@ -90,7 +104,7 @@ def _subscriber_callback(area_name, topic, message):
 def _trigger_callback(func_name, message):
 	try:
 		func = _triggers[func_name]
-		_trgs_rcvd[func] = message
+		demand[func] = message
 	except KeyError:
 		if func_name == 'shutdown':
 			node.goon = False
@@ -98,23 +112,23 @@ def _trigger_callback(func_name, message):
 		logging.warning('Unavailable Trigger called')
 
 
-def subscribe(subscriptions, pulse_name, pulse_topic):
+def subscribe(subscriptions, pulse_name, pulse_slot):
 	global _pulse_name
-	global _pulse_topic
+	global _pulse_slot
 	_pulse_name = pulse_name
-	_pulse_topic = pulse_topic
+	_pulse_slot = pulse_slot
 	for item in subscriptions:
 		context[item[0]] = {}
 		context[item[0]][item[1]] = None
-	subscriptions.append((pulse_name, pulse_topic, 1))
+	subscriptions.append((pulse_name, pulse_slot, 1))
 	node.subscriptions = subscriptions
 	node.subscriber_cb = _subscriber_callback
 	node.trigger_cb = _trigger_callback
 
 
-def autoloop(func=None, params=None):
+def autoloop(func=None, params={}):
 	if func:
-		_trgs_rcvd[func] = params
+		demand[func] = params
 	else:
 		global _received
 		_received = True

@@ -78,7 +78,7 @@ def _pulse_callback():
 	global clock
 	clock += 1
 	if demand:
-		call_triggers(demand)
+		call_triggers()
 		demand.clear()
 	if _received and _change_function:
 		global _received

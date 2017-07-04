@@ -92,11 +92,16 @@ def _subscriber_callback(area_name, slot, message):
 	if area_name == _pulse_name and slot == _pulse_slot:
 		_pulse_callback()
 	else:
-		context[area_name][slot] = clock
 		try:
-			context[area_name][slot + '-data'].update(message)
+			area_dict = context[area_name]
+			area_dict[slot]  # test for subscription
+			area_dict[slot] = clock
+			area_dict[slot + '-data'].update(message)
 		except KeyError:
-			context[area_name][slot + '-data'] = message
+			if area_name not in context or slot not in area_dict:
+				logging.warning('Message from Slot not subscribed')
+				return
+			area_dict[slot + '-data'] = message
 		global _received
 		_received = True
 

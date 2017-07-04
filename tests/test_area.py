@@ -10,6 +10,10 @@ import zmq
 log_stream = StringIO()
 
 
+def test_ok():
+	pass
+
+
 # @pytest.fixture(scope='module', autouse=True)
 # def interfaces_file(tmpdir_factory):
 # 	ifs = {

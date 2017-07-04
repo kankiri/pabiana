@@ -68,6 +68,7 @@ def run(own_name, host=None):
 		poller.register(subscriber, zmq.POLLIN)
 		subs[subscriber] = item[0]
 	logging.info('Listening to %s', subscriptions)
+	# TODO: Single socket for multiple topics
 	
 	# Runner Initialization
 	global goon

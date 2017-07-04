@@ -18,10 +18,11 @@ demand = {}
 context = {}
 
 _triggers = {}
+_loop = {}
 _pulse_name = None
 _pulse_slot = None
 _received = False
-_change_function = None
+_alt_function = None
 _pulse_function = None
 
 
@@ -37,8 +38,8 @@ def alteration(func):
 	"""
 	Registers this function to be called when context changes.
 	"""
-	global _change_function
-	_change_function = func
+	global _alt_function
+	_alt_function = func
 	return func
 
 
@@ -77,13 +78,16 @@ def call_triggers():
 def _pulse_callback():
 	global clock
 	clock += 1
+	if _loop:
+		demand.update(_loop)
+		_loop.clear()
 	if demand:
 		call_triggers()
 		demand.clear()
-	if _received and _change_function:
+	if _received and _alt_function:
 		global _received
 		_received = False
-		_change_function()
+		_alt_function()
 	if _pulse_function:
 		_pulse_function()
 
@@ -133,7 +137,7 @@ def subscribe(subscriptions, pulse_name, pulse_slot):
 
 def autoloop(func=None, params={}):
 	if func:
-		demand[func] = params
+		_loop[func] = params
 	else:
 		global _received
 		_received = True

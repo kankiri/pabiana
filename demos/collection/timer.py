@@ -2,35 +2,44 @@
 
 from datetime import datetime
 
-from pabiana.area import create_publisher, reg_name, run, timeout
+from pabiana import area
+from pabiana.area import load_interfaces, pulse, register, subscribe
+from pabiana.node import create_publisher, run
 
+NAME = 'timer'
 publisher = None
-context = {'timers': {}}
 
 
-@reg_name('set')
-def trgr_set(recv_name, dttime):
+# Triggers
+@register
+def place(slot_name, dttime):
 	"""
 	Set a timer to be published at the specified minute.
 	"""
 	dttime = datetime.strptime(dttime, '%Y-%m-%d %H:%M:%S')
 	dttime = dttime.replace(second=0, microsecond=0)
 	try:
-		context['timers'][dttime].add(recv_name)
+		area.context['timers'][dttime].add(slot_name)
 	except KeyError:
-		context['timers'][dttime] = {recv_name}
+		area.context['timers'][dttime] = {slot_name}
 
 
-@timeout
+# Reactions
+@pulse
 def update():
 	now = datetime.utcnow()
-	for key in context['timers']:
+	for key in area.context['timers']:
 		if now > key:
-			for recv_name in context['timers'][key]:
-				publisher.send_multipart([recv_name.encode('utf-8'), '{}'.encode('utf-8')])
-			del context['timers'][key]
+			message = '{}'.encode('utf-8')
+			for slot_name in area.context['timers'][key]:
+				publisher.send_multipart([slot_name.encode('utf-8'), message])
+			del area.context['timers'][key]
 
 
 if __name__ == '__main__':
-	publisher = create_publisher(own_name='timer', host='0.0.0.0')
-	run(own_name='timer', host='0.0.0.0', timeout_ms=10000)
+	load_interfaces('interfaces.json')
+	subscribe([], 'pulse', '02')
+	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
+	area.context['timers'] = {}
+	
+	run(own_name=NAME, host='0.0.0.0')

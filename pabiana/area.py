@@ -53,13 +53,13 @@ def pulse(func):
 
 
 def scheduling(func):
+	global call_triggers
 	old = call_triggers
 	
 	def schedule():
 		func()
 		old()
 	
-	global call_triggers
 	call_triggers = schedule
 	return func
 
@@ -77,6 +77,7 @@ def call_triggers():
 
 def _pulse_callback():
 	global clock
+	global _received
 	clock += 1
 	if _loop:
 		demand.update(_loop)
@@ -85,7 +86,6 @@ def _pulse_callback():
 		call_triggers()
 		demand.clear()
 	if _received and _alt_function:
-		global _received
 		_received = False
 		_alt_function()
 	if _pulse_function:

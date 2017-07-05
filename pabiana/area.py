@@ -13,7 +13,7 @@ import logging
 
 from pabiana import node
 
-clock = 0
+clock = 1
 demand = {}
 context = {}
 
@@ -78,7 +78,6 @@ def call_triggers():
 def _pulse_callback():
 	global clock
 	global _received
-	clock += 1
 	if _loop:
 		demand.update(_loop)
 		_loop.clear()
@@ -90,6 +89,7 @@ def _pulse_callback():
 		_alt_function()
 	if _pulse_function:
 		_pulse_function()
+	clock += 1
 
 
 def _subscriber_callback(area_name, slot, message):

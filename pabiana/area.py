@@ -53,6 +53,9 @@ def pulse(func):
 
 
 def scheduling(func):
+	"""
+	Registers this function to be called directly before call_triggers.
+	"""
 	global call_triggers
 	old = call_triggers
 	
@@ -66,7 +69,7 @@ def scheduling(func):
 
 def call_triggers():
 	"""
-	Calls every trigger from triggers_received collection with its stored parameters.
+	Calls every trigger from demand with its stored parameters.
 	"""
 	for func in demand:
 		try:

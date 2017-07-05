@@ -41,14 +41,12 @@ def test_alteration():
 	result = alteration(test_alteration)
 	assert result is test_alteration
 	assert area._alt_function is test_alteration
-	area._alt_function = None
 
 
 def test_pulse():
 	result = pulse(test_pulse)
 	assert result is test_pulse
 	assert area._pulse_function is test_pulse
-	area._pulse_function = None
 
 
 def test_scheduling():
@@ -62,13 +60,12 @@ def test_scheduling():
 		nonlocal test_value
 		test_value += 'new'
 	
-	restore = area.call_triggers
 	area.call_triggers = old
 	result = scheduling(new)
 	assert result is new
 	area.call_triggers()
 	assert test_value == 'newold'
-	area.call_triggers = restore
+	area.call_triggers = call_triggers
 
 
 def test_call_triggers():
@@ -103,8 +100,6 @@ def test_subscribe():
 	assert node.subscriber_cb == area._subscriber_callback
 	assert node.trigger_cb == area._trigger_callback
 	node.subscriptions.clear()
-	node.subscriber_cb = None
-	node.trigger_cb = None
 
 
 def test_autoloop():
@@ -138,3 +133,62 @@ def test_rslv():
 	assert result['ip'] == '127.0.0.1'
 	assert result['port'] == 54316
 	node.interfaces.clear()
+
+
+def test_area():
+	area._triggers.clear()
+	area.demand.clear()
+	node.subscriptions.clear()
+	area._loop.clear()
+	test_value = ''
+	
+	@register
+	def demand_me_1(value):
+		nonlocal test_value
+		test_value += value
+	
+	@register
+	def demand_me_2(value):
+		nonlocal test_value
+		test_value += value
+	
+	@alteration
+	def forward():
+		nonlocal test_value
+		test_value += 'forward'
+	
+	@pulse
+	def everytime():
+		nonlocal test_value
+		test_value += 'everytime'
+	
+	@scheduling
+	def scheduler():
+		nonlocal test_value
+		test_value += 'scheduler'
+	
+	subscribe([('area1', 'slot1')], 'pulse', '001')
+	
+	autoloop(demand_me_1, {'value': 'dm_1_value'})
+	area._subscriber_callback('pulse', '001', {})
+	assert test_value == 'scheduler' + 'dm_1_value' + 'everytime'
+	test_value = ''
+	
+	area._trigger_callback('demand_me_2', {'value': 'dm_2_value'})
+	area._subscriber_callback('pulse', '001', {})
+	assert test_value == 'scheduler' + 'dm_2_value' + 'everytime'
+	test_value = ''
+	
+	autoloop(demand_me_2, {'value': 'dm_2_value'})
+	area._subscriber_callback('area1', 'slot1', {'value': 'area1_value'})
+	area._trigger_callback('demand_me_1', {'value': 'dm_1_value'})
+	assert test_value == ''
+	area._subscriber_callback('pulse', '001', {})
+	assert test_value == 'scheduler' + 'dm_1_value' + 'dm_2_value' + 'forward' + 'everytime' \
+		or test_value == 'scheduler' + 'dm_2_value' + 'dm_1_value' + 'forward' + 'everytime'
+	
+	area._triggers.clear()
+	area.demand.clear()
+	node.subscriptions.clear()
+	area._loop.clear()
+	area.call_triggers = call_triggers

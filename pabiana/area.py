@@ -118,21 +118,21 @@ def _trigger_callback(func_name, message):
 		func = _triggers[func_name]
 		demand[func] = message
 	except KeyError:
-		if func_name == 'shutdown':
+		if func_name == 'exit':
 			node.goon = False
 			return
 		logging.warning('Unavailable Trigger called')
 
 
-def subscribe(subscriptions, pulse_name, pulse_slot):
+def subscribe(subscriptions, clock_name, clock_slot):
 	global _pulse_name
 	global _pulse_slot
-	_pulse_name = pulse_name
-	_pulse_slot = pulse_slot
+	_pulse_name = clock_name
+	_pulse_slot = clock_slot
 	for item in subscriptions:
 		context[item[0]] = {}
 		context[item[0]][item[1]] = None
-	subscriptions.append((pulse_name, pulse_slot, 1))
+	subscriptions.append((clock_name, clock_slot, 1))
 	node.subscriptions = subscriptions
 	node.subscriber_cb = _subscriber_callback
 	node.trigger_cb = _trigger_callback

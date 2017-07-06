@@ -23,9 +23,9 @@ def main():
 				data = {'signal': 'window-close'}
 				publisher.send_multipart(['input'.encode('utf-8'), json.dumps(data).encode('utf-8')])
 	except KeyboardInterrupt:
-		trigger('association', 'shutdown')
-		trigger('smarthome', 'shutdown')
-		trigger('weather', 'shutdown')
+		trigger('association', 'exit')
+		trigger('smarthome', 'exit')
+		trigger('weather', 'exit')
 
 
 if __name__ == '__main__':

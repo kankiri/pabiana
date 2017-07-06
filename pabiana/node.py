@@ -1,5 +1,6 @@
 import json
 import logging
+import signal
 
 import zmq
 
@@ -73,11 +74,12 @@ def run(own_name, host=None):
 	# Runner Initialization
 	global goon
 	goon = True
+	signal.signal(signal.SIGINT, _signal_handler)
 	
 	# Runner
 	try:
 		while goon:
-			socks = dict(poller.poll())
+			socks = dict(poller.poll(1000))
 			for sock in socks:
 				if sock == receiver:
 					message = receiver.recv_json()
@@ -90,8 +92,6 @@ def run(own_name, host=None):
 					[topic, message] = _decoder(sock.recv_multipart())
 					logging.debug('Subscriber Message from %s: %s/%s', area_nm, topic, message)
 					subscriber_cb(area_nm, topic, message)
-	except KeyboardInterrupt:
-		pass
 	finally:
 		context.destroy(linger=2000)
 		logging.debug('Context destroyed')
@@ -104,3 +104,8 @@ def _decoder(rcvd):
 	[topic, message] = [x.decode('utf-8') for x in rcvd]
 	message = json.loads(message)
 	return [topic, message]
+
+
+def _signal_handler(signum, frame):
+	global goon
+	goon = False

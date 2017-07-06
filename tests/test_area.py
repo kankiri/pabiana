@@ -69,6 +69,7 @@ def test_scheduling():
 
 
 def test_call_triggers():
+	area.loop.clear()
 	area.demand.clear()
 	test_value = ''
 	
@@ -81,9 +82,10 @@ def test_call_triggers():
 		test_value += value
 	
 	area.demand[test1] = {'value': 'test1'}
-	area.demand[test2] = {'value': 'test2'}
+	area.loop[test2] = {'value': 'test2'}
 	call_triggers()
 	assert test_value == 'test1test2' or test_value == 'test2test1'
+	area.loop.clear()
 	area.demand.clear()
 
 
@@ -108,12 +110,12 @@ def test_autoloop():
 	assert area._received
 	area._received = False
 	
-	area._loop.clear()
+	area.loop.clear()
 	autoloop(test_autoloop, {'value': 5})
-	assert len(area._loop) == 1
-	assert test_autoloop in area._loop
-	assert area._loop[test_autoloop]['value'] == 5
-	area._loop.clear()
+	assert len(area.loop) == 1
+	assert test_autoloop in area.loop
+	assert area.loop[test_autoloop]['value'] == 5
+	area.loop.clear()
 
 
 def test_load_interfaces():
@@ -139,7 +141,7 @@ def test_area():
 	area._triggers.clear()
 	area.demand.clear()
 	node.subscriptions.clear()
-	area._loop.clear()
+	area.loop.clear()
 	test_value = ''
 	
 	@register
@@ -190,5 +192,5 @@ def test_area():
 	area._triggers.clear()
 	area.demand.clear()
 	node.subscriptions.clear()
-	area._loop.clear()
+	area.loop.clear()
 	area.call_triggers = call_triggers

@@ -15,10 +15,10 @@ from pabiana import node
 
 clock = 1
 demand = {}
+loop = {}
 context = {}
 
 _triggers = {}
-_loop = {}
 _pulse_name = None
 _pulse_slot = None
 _received = False
@@ -69,8 +69,10 @@ def scheduling(func):
 
 def call_triggers():
 	"""
-	Calls every trigger from demand with its stored parameters.
+	Calls every trigger from demand and loop with their stored parameters.
 	"""
+	if loop:
+		demand.update(loop)
 	for func in demand:
 		try:
 			func(**demand[func])
@@ -81,11 +83,9 @@ def call_triggers():
 def _pulse_callback():
 	global clock
 	global _received
-	if _loop:
-		demand.update(_loop)
-		_loop.clear()
-	if demand:
+	if loop or demand:
 		call_triggers()
+		loop.clear()
 		demand.clear()
 	if _received and _alt_function:
 		_received = False
@@ -140,7 +140,7 @@ def subscribe(subscriptions, pulse_name, pulse_slot):
 
 def autoloop(func=None, params={}):
 	if func:
-		_loop[func] = params
+		loop[func] = params
 	else:
 		global _received
 		_received = True

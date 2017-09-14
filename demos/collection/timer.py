@@ -2,16 +2,13 @@
 
 from datetime import datetime
 
-from pabiana import area
-from pabiana.area import load_interfaces, pulse, register, subscribe
-from pabiana.node import create_publisher, run
+from pabiana import Area, load_interfaces
 
 NAME = 'timer'
-publisher = None
+EMPTY = '{}'.encode('utf-8')
 
 
-# Triggers
-@register
+@area.register
 def place(slot_name, dttime):
 	"""
 	Set a timer to be published at the specified minute.
@@ -24,22 +21,20 @@ def place(slot_name, dttime):
 		area.context['timers'][dttime] = {slot_name}
 
 
-# Reactions
-@pulse
+@area.pulse
 def update():
 	now = datetime.utcnow()
 	for key in area.context['timers']:
 		if now > key:
-			message = '{}'.encode('utf-8')
 			for slot_name in area.context['timers'][key]:
-				publisher.send_multipart([slot_name.encode('utf-8'), message])
+				area.publish(EMPTY, slot=slot_name)
 			del area.context['timers'][key]
 
 
 if __name__ == '__main__':
 	load_interfaces('interfaces.json')
-	subscribe([], 'pulse', '02')
-	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
+	area = Area(NAME, host='0.0.0.0')
+	area.setup('clock', '##')
 	area.context['timers'] = {}
-	
-	run(own_name=NAME, host='0.0.0.0')
+	area.run()
+

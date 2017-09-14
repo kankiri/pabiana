@@ -2,39 +2,34 @@
 
 import logging
 
-from pabiana import area
-from pabiana.area import autoloop, load_interfaces, pulse, register, scheduling, subscribe
-from pabiana.node import create_publisher, run
+from pabiana import Area, load_interfaces
 
 NAME = 'smarthome'
-publisher = None
 
 
-# Triggers
-@register
+@area.register
 def increase_temp():
 	area.context['temperature'] += 0.25
-	autoloop(increase_temp)
+	area.autoloop(increase_temp)
 
 
-@register
+@area.register
 def lower_temp():
 	area.context['temperature'] -= 0.25
-	autoloop(lower_temp)
+	area.autoloop(lower_temp)
 
 
-@register
+@area.register
 def keep_temp():
 	pass
 
 
-@register
+@area.register
 def window(open):
 	area.context['window-open'] = open
 
 
-# Reactions
-@scheduling
+@area.scheduling
 def schedule():
 	if keep_temp in area.demand:
 		area.demand.pop(increase_temp, None)
@@ -43,10 +38,10 @@ def schedule():
 		area.demand.pop(increase_temp, None)
 
 
-@pulse
+@area.pulse
 def publish():
-	if area.clock % 8 == 0:
-		publisher.send_json({
+	if area.time % 8 == 0:
+		area.publish({
 			'temperature': area.context['temperature'],
 			'window-open': area.context['window-open']
 		})
@@ -60,9 +55,9 @@ if __name__ == '__main__':
 	)
 	
 	load_interfaces('interfaces.json')
-	subscribe([], 'pulse', '01')
-	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
+	area = Area(NAME, host='0.0.0.0')
+	area.setup('clock')
 	area.context['temperature'] = 18
 	area.context['window-open'] = False
-	
-	run(own_name=NAME, host='0.0.0.0')
+	area.run()
+

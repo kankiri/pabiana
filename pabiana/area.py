@@ -1,158 +1,129 @@
-"""
-Use this module to start a new Pabiana Area.
-Each Area is initialized with a Receiver Interface.
-The Receiver Interface accepts Requests for remote Triggers.
-Subscription Interfaces are created as defined.
-Subscription Interfaces call defined Reactions.
-The Area name must not contain "_" characters.
-A Publishing Interface can be added optionally.
-"""
-
-import json
+from collections import deque
 import logging
 
-from pabiana import node
-
-clock = 1
-demand = {}
-loop = {}
-context = {}
-
-_triggers = {}
-_pulse_name = None
-_pulse_slot = None
-_received = False
-_alt_function = None
-_pulse_function = None
+from .node import Node
 
 
-def register(func):
-	"""
-	Registers this function as remote Trigger.
-	"""
-	_triggers[func.__name__] = func
-	return func
-
-
-def alteration(func):
-	"""
-	Registers this function to be called when context changes.
-	"""
-	global _alt_function
-	_alt_function = func
-	return func
-
-
-def pulse(func):
-	"""
-	Registers this function to be called at every pulse.
-	"""
-	global _pulse_function
-	_pulse_function = func
-	return func
-
-
-def scheduling(func):
-	"""
-	Registers this function to be called directly before call_triggers.
-	"""
-	global call_triggers
-	old = call_triggers
+class Area(Node):
+	def __init__(self, name, host=None):
+		super().__init__(name, host)
+		self.clock_name = None
+		self.clock_slot = None
+		self.received = None
+		self.alt_function = None
+		self.pulse_function = None
+		self.time = 1
+		self.demand = {}
+		self.loop = {}
+		self.context = {}
+		self.triggers = {}
+		self.parsers = {}
 	
-	def schedule():
-		func()
-		old()
+	def register(self, func):
+		"""
+		Registers this function as remote Trigger.
+		"""
+		self.triggers[func.__name__] = func
+		return func
 	
-	call_triggers = schedule
-	return func
-
-
-def call_triggers():
-	"""
-	Calls every trigger from demand and loop with their stored parameters.
-	"""
-	if loop:
-		demand.update(loop)
-	for func in demand:
+	def alteration(self, func):
+		"""
+		Registers this function to be called when context changes.
+		"""
+		self.alt_function = func
+		return func
+	
+	def pulse(self, func):
+		"""
+		Registers this function to be called at every pulse.
+		"""
+		self.pulse_function = func
+		return func
+	
+	def scheduling(self, func):
+		"""
+		Registers this function to be called directly before call_triggers.
+		"""
+		old = self.call_triggers
+		
+		def schedule():
+			func(); old()
+		
+		self.call_triggers = schedule
+		return func
+	
+	def call_triggers(self):
+		if self.loop:
+			self.demand.update(self.loop)
+		for func in self.demand:
+			try:
+				func(**self.demand[func])
+			except TypeError:
+				logging.warning('Trigger Parameter Error')
+	
+	def clock_callback(self):
+		if self.loop or self.demand:
+			self.call_triggers()
+			self.loop.clear()
+			self.demand.clear()
+		if self.received and self.alt_function is not None:
+			self.received = False
+			self.alt_function()
+		if self.pulse_function is not None:
+			self.pulse_function()
+		self.time += 1
+	
+	def subscriber_message(self, area_name, slot, message):
+		if area_name == self.clock_name:  #and slot == self.clock_slot:
+			self.clock_callback()
+		elif slot in self.parsers[area_name]:
+			self.parsers[area_name][slot](area_name, slot, message)
+			self.received = True
+		else:
+			logging.warning('Message from unsubscribed Slot: %s:%s', area_name, slot)
+	
+	def receiver_message(self, func_name, message):
 		try:
-			func(**demand[func])
-		except TypeError:
-			logging.warning('Trigger Parameter Error')
-
-
-def _pulse_callback():
-	global clock
-	global _received
-	if loop or demand:
-		call_triggers()
-		loop.clear()
-		demand.clear()
-	if _received and _alt_function:
-		_received = False
-		_alt_function()
-	if _pulse_function:
-		_pulse_function()
-	clock += 1
-
-
-def _subscriber_callback(area_name, slot, message):
-	if area_name == _pulse_name and slot == _pulse_slot:
-		_pulse_callback()
-	else:
-		try:
-			area_dict = context[area_name]
-			area_dict[slot]  # test for subscription
-			area_dict[slot] = clock
-			area_dict[slot + '-data'].update(message)
+			func = self.triggers[func_name]
+			self.demand[func] = message
 		except KeyError:
-			if area_name not in context or slot not in area_dict:
-				logging.warning('Message from Slot not subscribed')
+			if func_name == 'exit':
+				self.goon = False
 				return
-			area_dict[slot + '-data'] = message
-		global _received
-		_received = True
+			logging.warning('Unavailable Trigger called: %s', func_name)
+	
+	def imprint(self, area_name, slot, message):
+		self.context[area_name][slot].appendleft(message)
+		self.context[area_name][slot][0]['time-rcvd'] = self.time
+	
+	def init_slot(self, area_name, slot):
+		self.context[area_name][slot] = deque(maxlen=100)
+	
+	def setup(self, clock_name, clock_slot='', subscriptions={}):
+		self.clock_name = clock_name
+		self.clock_slot = clock_slot
+		node_subs = {}
+		
+		for area_name in subscriptions:
+			self.context[area_name] = {}
+			self.parsers[area_name] = {}
+			node_subs[area_name] = {'topics': set()}
+			for slot in subscriptions[area_name]:
+				try:
+					self.parsers[area_name][slot] = subscriptions[area_name][slot]['parser']
+					subscriptions[area_name][slot]['init'](area_name, slot)
+				except:
+					self.parsers[area_name][slot] = self.imprint
+					self.init_slot(area_name, slot)
+				node_subs[area_name]['topics'].add(slot)
+		
+		node_subs[clock_name] = {'topics': {clock_slot}, 'buffer-length': 1}
+		self.setup_receiver(self.receiver_message)
+		self.setup_subscibers(node_subs, self.subscriber_message)
+	
+	def autoloop(self, func=None, params={}):
+		if func is not None:
+			self.loop[func] = params
+		else:
+			self.received = True
 
-
-def _trigger_callback(func_name, message):
-	try:
-		func = _triggers[func_name]
-		demand[func] = message
-	except KeyError:
-		if func_name == 'exit':
-			node.goon = False
-			return
-		logging.warning('Unavailable Trigger called')
-
-
-def subscribe(subscriptions, clock_name, clock_slot):
-	global _pulse_name
-	global _pulse_slot
-	_pulse_name = clock_name
-	_pulse_slot = clock_slot
-	for item in subscriptions:
-		context[item[0]] = {}
-		context[item[0]][item[1]] = None
-	subscriptions.append((clock_name, clock_slot, 1))
-	node.subscriptions = subscriptions
-	node.subscriber_cb = _subscriber_callback
-	node.trigger_cb = _trigger_callback
-
-
-def autoloop(func=None, params={}):
-	if func:
-		loop[func] = params
-	else:
-		global _received
-		_received = True
-
-
-def load_interfaces(path):
-	with open(path, encoding='utf-8') as f:
-		node.interfaces = json.load(f)
-
-
-def rslv(interface):
-	"""
-	Returns a dictionary containing the ip and the port of the interface.
-	"""
-	return node.interfaces[interface]

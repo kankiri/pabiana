@@ -3,28 +3,15 @@
 import json
 import logging
 
-from pabiana import area
-from pabiana.area import load_interfaces, pulse, scheduling, subscribe
-from pabiana.node import create_publisher, run
+from pabiana import Area, load_interfaces
 
 NAME = 'weather'
-publisher = None
 
 
-# Reactions
-@scheduling
-def schedule():
-	if keep_temp in area.demand:
-		area.demand.pop(increase_temp, None)
-		area.demand.pop(lower_temp, None)
-	elif lower_temp in area.demand:
-		area.demand.pop(increase_temp, None)
-
-
-@pulse
+@area.pulse
 def publish():
-	if area.clock % 8 == 0:
-		publisher.send_json({
+	if area.time % 8 == 0:
+		area.publish({
 			'temperature': area.context['temperature'],
 			'humidity': area.context['humidity']
 		})
@@ -38,9 +25,9 @@ if __name__ == '__main__':
 	)
 	
 	load_interfaces('interfaces.json')
-	subscribe([], 'pulse', '01')
-	publisher = create_publisher(own_name=NAME, host='0.0.0.0')
+	area = Area(NAME, host='0.0.0.0')
+	area.setup('clock')
 	area.context['temperature'] = 5
 	area.context['humidity'] = 40
-	
-	run(own_name=NAME, host='0.0.0.0')
+	area.run()
+

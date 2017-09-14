@@ -15,6 +15,5 @@ lib64/
 *.out
 
 data/
-.venv/
-.dckvenv/
+.*venv/
 .idea/

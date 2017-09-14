@@ -19,11 +19,11 @@
 		"ip": "127.0.0.1",
 		"port": 54314
 	},
-	"pulse-rcv": {
+	"clock-rcv": {
 		"ip": "127.0.0.1",
 		"port": 54313
 	},
-	"pulse-pub": {
+	"clock-pub": {
 		"ip": "127.0.0.1",
 		"port": 54312
 	},

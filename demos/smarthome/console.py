@@ -2,17 +2,26 @@
 
 import json
 import logging
+import signal
 
-from pabiana.area import load_interfaces
-from pabiana.node import create_publisher, trigger
+from pabiana import create_publisher, load_interfaces, trigger
 
 NAME = 'console'
 publisher = None
+stop = None
+
+
+def _signal_handler(signum, frame):
+	global stop
+	stop = True
 
 
 def main():
+	global stop
+	stop = False
+	signal.signal(signal.SIGINT, _signal_handler)
 	try:
-		while True:
+		while not stop:
 			s = input('--> ').lower()
 			if 'quit' in s:
 				raise KeyboardInterrupt
@@ -22,7 +31,7 @@ def main():
 			elif 'close' in s:
 				data = {'signal': 'window-close'}
 				publisher.send_multipart(['input'.encode('utf-8'), json.dumps(data).encode('utf-8')])
-	except KeyboardInterrupt:
+	finally:
 		trigger('association', 'exit')
 		trigger('smarthome', 'exit')
 		trigger('weather', 'exit')

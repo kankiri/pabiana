@@ -35,6 +35,7 @@ def main():
 		trigger('association', 'exit')
 		trigger('smarthome', 'exit')
 		trigger('weather', 'exit')
+		trigger('clock', 'exit')
 
 
 if __name__ == '__main__':

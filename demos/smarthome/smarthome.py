@@ -10,13 +10,13 @@ area = Area(NAME, host='0.0.0.0')
 
 @area.register
 def increase_temp():
-	area.context['temperature'] += 0.25
+	area.context['temperature'] += 0.5
 	area.autoloop(increase_temp)
 
 
 @area.register
 def lower_temp():
-	area.context['temperature'] -= 0.25
+	area.context['temperature'] -= 0.5
 	area.autoloop(lower_temp)
 
 

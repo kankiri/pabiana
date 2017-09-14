@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from contextlib import suppress
 import logging
 
 from pabiana import Area, load_interfaces, trigger
@@ -10,19 +11,22 @@ area = Area(NAME, host='0.0.0.0')
 
 @area.alteration
 def control():
-	in_temp = area.context['smarthome'][''][0]['temperature']
-	win_open = area.context['smarthome'][''][0]['window-open']
-	out_temp = area.context['weather'][''][0]['temperature']
+	if len(area.context['smarthome']['']) > 0 \
+	and len(area.context['weather']['']) > 0:
+		in_temp = area.context['smarthome'][''][0]['temperature']
+		win_open = area.context['smarthome'][''][0]['window-open']
+		out_temp = area.context['weather'][''][0]['temperature']
 	
-	if area.context['smarthome'][''][0]['time-rcvd'] == area.time or
-	area.context['weather'][''][0]['time-rcvd'] == area.time:
-		control_helper(in_temp, out_temp, win_open)
+		if area.context['smarthome'][''][0]['time-rcvd'] == area.time \
+		or area.context['weather'][''][0]['time-rcvd'] == area.time:
+			control_helper(in_temp, out_temp, win_open)
 	
-	if area.context['console']['input'][0]['time-rcvd'] == area.time:
-		if area.context['console']['input-data']['signal'] == 'window-open':
-			trigger('smarthome', 'window', {'open': True})
-		elif area.context['console']['input-data']['signal'] == 'window-close':
-			trigger('smarthome', 'window', {'open': False})
+	with suppress(Exception):
+		if area.context['console']['input'][0]['time-rcvd'] == area.time:
+			if area.context['console']['input'][0]['signal'] == 'window-open':
+				trigger('smarthome', 'window', {'open': True})
+			elif area.context['console']['input'][0]['signal'] == 'window-close':
+				trigger('smarthome', 'window', {'open': False})
 
 
 def control_helper(in_temp, out_temp, win_open):
@@ -40,6 +44,18 @@ def control_helper(in_temp, out_temp, win_open):
 			trigger('smarthome', 'increase_temp')
 		else:
 			trigger('smarthome', 'keep_temp')
+
+
+@area.pulse
+def publish():
+	if area.time % 8 == 0:
+		with suppress(Exception):
+			logging.debug(
+				'Inside Temp: %s, Outside Temp: %s, Window Open: %s', 
+				area.context['smarthome'][''][0]['temperature'],
+				area.context['weather'][''][0]['temperature'],
+				area.context['smarthome'][''][0]['window-open']
+			)
 
 
 if __name__ == '__main__':

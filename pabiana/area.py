@@ -119,7 +119,7 @@ class Area(Node):
 		
 		node_subs[clock_name] = {'topics': {clock_slot}, 'buffer-length': 1}
 		self.setup_receiver(self.receiver_message)
-		self.setup_subscibers(node_subs, self.subscriber_message)
+		self.setup_subscribers(node_subs, self.subscriber_message)
 	
 	def autoloop(self, func=None, params={}):
 		if func is not None:

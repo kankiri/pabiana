@@ -88,7 +88,7 @@ def test_call_triggers():
 def test_setup_1():
 	area = Area('test')
 	area.setup_receiver = lambda *args, **kwargs: None
-	area.setup_subscibers = lambda *args, **kwargs: None
+	area.setup_subscribers = lambda *args, **kwargs: None
 	
 	def test1(area_name, slot):
 		area.context[area_name][slot] = 'test1'
@@ -114,7 +114,7 @@ def test_setup_1():
 def test_setup_2():
 	area = Area('test')
 	area.setup_receiver = lambda *args, **kwargs: None
-	area.setup_subscibers = lambda *args, **kwargs: None
+	area.setup_subscribers = lambda *args, **kwargs: None
 	area.setup('clock101', '002')
 	assert area.clock_name == 'clock101'
 	assert area.clock_slot == '002'
@@ -141,7 +141,7 @@ def test_autoloop_2():
 def test_area():
 	area = Area('test')
 	area.setup_receiver = lambda *args, **kwargs: None
-	area.setup_subscibers = lambda *args, **kwargs: None
+	area.setup_subscribers = lambda *args, **kwargs: None
 	
 	test_value = ''
 	

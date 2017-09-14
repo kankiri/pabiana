@@ -5,6 +5,7 @@ import logging
 from pabiana import Area, load_interfaces, trigger
 
 NAME = 'association'
+area = Area(NAME, host='0.0.0.0')
 
 
 @area.alteration
@@ -49,7 +50,6 @@ if __name__ == '__main__':
 	)
 	
 	load_interfaces('interfaces.json')
-	area = Area(NAME, host='0.0.0.0')
 	area.setup('clock', '#', {'smarthome': [''], 'weather': [''], 'console': ['input']})
 	area.run()
 

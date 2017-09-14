@@ -6,6 +6,7 @@ import logging
 from pabiana import Area, load_interfaces
 
 NAME = 'weather'
+area = Area(NAME, host='0.0.0.0')
 
 
 @area.pulse
@@ -25,7 +26,6 @@ if __name__ == '__main__':
 	)
 	
 	load_interfaces('interfaces.json')
-	area = Area(NAME, host='0.0.0.0')
 	area.setup('clock')
 	area.context['temperature'] = 5
 	area.context['humidity'] = 40

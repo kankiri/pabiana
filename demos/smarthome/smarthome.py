@@ -5,6 +5,7 @@ import logging
 from pabiana import Area, load_interfaces
 
 NAME = 'smarthome'
+area = Area(NAME, host='0.0.0.0')
 
 
 @area.register
@@ -55,7 +56,6 @@ if __name__ == '__main__':
 	)
 	
 	load_interfaces('interfaces.json')
-	area = Area(NAME, host='0.0.0.0')
 	area.setup('clock')
 	area.context['temperature'] = 18
 	area.context['window-open'] = False

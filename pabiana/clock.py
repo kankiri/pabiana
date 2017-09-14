@@ -32,7 +32,7 @@ class Clock(Node):
 	def run(self):
 		super().run(self.timeout)
 	
-	def template():
+	def template(self):
 		if self.time % 32 == 0:
 			self.publish(EMPTY, slot='#####')
 		elif self.time % 16 == 0:

@@ -2,7 +2,7 @@
 
 import logging
 
-from pabiana import Clock
+from pabiana import Clock, load_interfaces
 
 NAME = 'clock'
 

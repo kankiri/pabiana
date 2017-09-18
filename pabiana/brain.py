@@ -18,6 +18,9 @@ def main(module_name, area_name):
 	repo['area-name'] = area_name
 	mod = importlib.import_module(module_name)
 	
+	if hasattr(mod, 'setup'):
+		mod.setup()
+	
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):
 			params = {'clock_name': mod.config['clock-name']}

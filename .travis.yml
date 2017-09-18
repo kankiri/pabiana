@@ -6,3 +6,7 @@ python:
 install: "pip install --upgrade -r requirements.txt"
 
 script: "python setup.py test"
+
+branches:
+  only:
+  - master

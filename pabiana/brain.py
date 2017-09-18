@@ -7,8 +7,12 @@ from . import load_interfaces, repo
 
 def main(module_name, area_name):
 	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
-	if os.path.isfile(req_path):
+	if path.isfile(req_path):
 		pip.main(['install', '--upgrade', '-r', req_path])
+	
+	intf_path = path.join(os.getcwd(), 'interfaces.json')
+	if path.isfile(intf_path):
+		load_interfaces(intf_path)
 	
 	repo['area-name'] = area_name
 	mod = importlib.import_module(module_name)

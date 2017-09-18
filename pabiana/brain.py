@@ -36,4 +36,13 @@ def main(module_name, area_name):
 		mod.area.run()
 	
 	elif hasattr(mod, 'clock'):
+		if hasattr(mod, 'config'):
+			params = {}
+			if 'timeout' in mod.config:
+				if mod.config['timeout'] is not None:
+					params['timeout'] = mod.config['timeout']
+			if 'use-template' in mod.config:
+				if mod.config['use-template'] is not None:
+					params['use-template'] = mod.config['use-template']
+			mod.clock.setup(**params)
 		mod.clock.run()

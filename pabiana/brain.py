@@ -5,6 +5,7 @@ import pip
 
 from . import load_interfaces, repo
 
+
 def main(module_name, area_name):
 	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
 	if path.isfile(req_path):

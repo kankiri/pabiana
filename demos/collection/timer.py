@@ -5,7 +5,7 @@ from datetime import datetime
 from pabiana import Area, load_interfaces
 
 NAME = 'timer'
-EMPTY = '{}'.encode('utf-8')
+EMPTY = {}
 
 
 @area.register

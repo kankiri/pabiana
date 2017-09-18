@@ -43,6 +43,6 @@ def main(module_name, area_name):
 					params['timeout'] = mod.config['timeout']
 			if 'use-template' in mod.config:
 				if mod.config['use-template'] is not None:
-					params['use-template'] = mod.config['use-template']
+					params['use_template'] = mod.config['use-template']
 			mod.clock.setup(**params)
 		mod.clock.run()

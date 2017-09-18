@@ -27,7 +27,7 @@ def main(module_name, area_name):
 			if 'subscriptions' in mod.config:
 				if mod.config['subscriptions'] is not None:
 					params['subscriptions'] = mod.config['subscriptions']
-			mod.area.setup(params**)
+			mod.area.setup(**params)
 			if 'context-values' in mod.config:
 				mod.area.context.update(mod.config['context-values'])
 		mod.area.run()

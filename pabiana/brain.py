@@ -1,0 +1,49 @@
+import importlib
+import os
+from os import path
+import pip
+
+from . import load_interfaces, repo
+
+
+def main(module_name, area_name):
+	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
+	if path.isfile(req_path):
+		pip.main(['install', '--upgrade', '-r', req_path])
+	
+	intf_path = path.join(os.getcwd(), 'interfaces.json')
+	if path.isfile(intf_path):
+		load_interfaces(intf_path)
+	
+	repo['area-name'] = area_name
+	mod = importlib.import_module(module_name)
+	
+	if hasattr(mod, 'setup'):
+		mod.setup()
+	
+	if hasattr(mod, 'area'):
+		if hasattr(mod, 'config'):
+			params = {'clock_name': mod.config['clock-name']}
+			if 'clock-slot' in mod.config:
+				if mod.config['clock-slot'] is not None:
+					params['clock_slot'] = mod.config['clock-slot']
+			if 'subscriptions' in mod.config:
+				if mod.config['subscriptions'] is not None:
+					params['subscriptions'] = mod.config['subscriptions']
+			mod.area.setup(**params)
+			if 'context-values' in mod.config:
+				mod.area.context.update(mod.config['context-values'])
+		mod.area.run()
+	
+	elif hasattr(mod, 'clock'):
+		if hasattr(mod, 'config'):
+			params = {}
+			if 'timeout' in mod.config:
+				if mod.config['timeout'] is not None:
+					params['timeout'] = mod.config['timeout']
+			if 'use-template' in mod.config:
+				if mod.config['use-template'] is not None:
+					params['use_template'] = mod.config['use-template']
+			mod.clock.setup(**params)
+		mod.clock.run()
+

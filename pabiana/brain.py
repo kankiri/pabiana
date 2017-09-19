@@ -1,4 +1,5 @@
 import importlib
+import multiprocessing as mp
 import os
 from os import path
 import pip
@@ -6,14 +7,24 @@ import pip
 from . import load_interfaces, repo
 
 
-def main(module_name, area_name):
-	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
-	if path.isfile(req_path):
-		pip.main(['install', '--upgrade', '-r', req_path])
-	
+def main(*args):
 	intf_path = path.join(os.getcwd(), 'interfaces.json')
 	if path.isfile(intf_path):
 		load_interfaces(intf_path)
+	
+	if len(args) > 2:
+		mp.set_start_method('spawn')
+		for module_name, area_name in zip(args[0::2], args[1::2]):
+			process = mp.Process(target=run, args=(module_name, area_name))
+			process.start()
+	else:
+		run(*args)
+
+
+def run(module_name, area_name):
+	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
+	if path.isfile(req_path):
+		pip.main(['install', '--upgrade', '-r', req_path])
 	
 	repo['area-name'] = area_name
 	mod = importlib.import_module(module_name)
@@ -46,4 +57,3 @@ def main(module_name, area_name):
 					params['use_template'] = mod.config['use-template']
 			mod.clock.setup(**params)
 		mod.clock.run()
-

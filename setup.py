@@ -8,8 +8,8 @@ setup(
 	version='0.0.7',
 	packages=find_packages(),
 	install_requires=['pyzmq>=16.0.2'],
-	setup_requires=['pytest-runner>=2.11.1'],
-	tests_require=['pytest>=3.0.7'],
+	setup_requires=['pytest-runner>=2.12.1'],
+	tests_require=['pytest>=3.2.2'],
 	zip_safe=False,
 	
 	url='https://github.com/kankiri/pabiana',

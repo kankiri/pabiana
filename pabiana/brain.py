@@ -8,10 +8,6 @@ from . import load_interfaces, repo
 
 
 def main(*args):
-	intf_path = path.join(os.getcwd(), 'interfaces.json')
-	if path.isfile(intf_path):
-		load_interfaces(intf_path)
-	
 	if len(args) > 2:
 		mp.set_start_method('spawn')
 		for module_name, area_name in zip(args[0::2], args[1::2]):
@@ -22,6 +18,10 @@ def main(*args):
 
 
 def run(module_name, area_name):
+	intf_path = path.join(os.getcwd(), 'interfaces.json')
+	if path.isfile(intf_path):
+		load_interfaces(intf_path)
+
 	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
 	if path.isfile(req_path):
 		pip.main(['install', '--upgrade', '-r', req_path])

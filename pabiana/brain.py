@@ -59,3 +59,12 @@ def run(module_name, area_name):
 					params['use_template'] = mod.config['use-template']
 			mod.clock.setup(**params)
 		mod.clock.run()
+	
+	elif hasattr(mod, 'runner'):
+		if hasattr(mod.runner, 'setup'):
+			params = {}
+			if hasattr(mod, 'config'):
+				params.update(config)
+			mod.runner.setup(**params)
+		mod.runner.run()
+

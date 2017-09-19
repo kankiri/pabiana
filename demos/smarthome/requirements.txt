@@ -1,1 +1,1 @@
-git+https://github.com/kankiri/pabiana@pulse
+Pabiana>=0.0.7

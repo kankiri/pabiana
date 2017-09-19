@@ -1,3 +1,4 @@
+import logging
 import importlib
 import multiprocessing as mp
 import os
@@ -10,6 +11,7 @@ from . import load_interfaces, repo
 
 def main(*args):
 	if len(args) > 2:
+		logging.info('Starting %s processes', len(args)/2.0)
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
 		for module_name, area_name in zip(args[0::2], args[1::2]):

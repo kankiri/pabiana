@@ -2,8 +2,6 @@ import signal
 from pabiana import Node, repo, trigger
 from .setup import setup
 
-runner = Runner(repo['area-name'], host='0.0.0.0')
-
 
 class Runner(Node):
 	def run(self):
@@ -13,7 +11,7 @@ class Runner(Node):
 			while self.goon:
 				s = input('--> ').lower()
 				if 'quit' in s:
-					raise KeyboardInterrupt
+					self.stop()
 				if 'open' in s:
 					self.publish({'signal': 'window-open'}, slot='input')
 				elif 'close' in s:
@@ -23,4 +21,7 @@ class Runner(Node):
 			trigger('smarthome', 'exit')
 			trigger('weather', 'exit')
 			trigger('clock', 'exit')
+
+
+runner = Runner(repo['area-name'], host='0.0.0.0')
 

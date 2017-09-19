@@ -19,7 +19,7 @@ def control():
 	if len(area.context['smarthome']['']) > 0 \
 	and len(area.context['weather']['']) > 0:
 		in_temp = area.context['smarthome'][''][0]['temperature']
-		win_open = area.context['smarthomfrom .setup import setupe'][''][0]['window-open']
+		win_open = area.context['smarthome'][''][0]['window-open']
 		out_temp = area.context['weather'][''][0]['temperature']
 	
 		if area.context['smarthome'][''][0]['time-rcvd'] == area.time \

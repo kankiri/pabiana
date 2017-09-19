@@ -3,22 +3,18 @@ import multiprocessing as mp
 import os
 from os import path
 import pip
-import time
+import signal
 
 from . import load_interfaces, repo
 
 
 def main(*args):
 	if len(args) > 2:
+		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
 		for module_name, area_name in zip(args[0::2], args[1::2]):
 			process = mp.Process(target=run, args=(module_name, area_name))
 			process.start()
-			try:
-				while True:
-					time.sleep(3)
-			except KeyboardInterrupt:
-				pass
 	else:
 		run(*args)
 

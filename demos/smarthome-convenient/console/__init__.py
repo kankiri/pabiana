@@ -1,4 +1,6 @@
 import signal
+import sys
+
 from pabiana import Node, repo, trigger
 from .setup import setup
 

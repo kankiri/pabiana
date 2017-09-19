@@ -1,29 +1,13 @@
 import importlib
-<<<<<<< HEAD
-import os
-from os import path
-import pip
-=======
 import multiprocessing as mp
 import os
 from os import path
 import pip
 import signal
->>>>>>> develop
 
 from . import load_interfaces, repo
 
 
-<<<<<<< HEAD
-def main(module_name, area_name):
-	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
-	if path.isfile(req_path):
-		pip.main(['install', '--upgrade', '-r', req_path])
-	
-	intf_path = path.join(os.getcwd(), 'interfaces.json')
-	if path.isfile(intf_path):
-		load_interfaces(intf_path)
-=======
 def main(*args):
 	if len(args) > 2:
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
@@ -43,7 +27,6 @@ def run(module_name, area_name):
 	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
 	if path.isfile(req_path):
 		pip.main(['install', '--upgrade', '-r', req_path])
->>>>>>> develop
 	
 	repo['area-name'] = area_name
 	mod = importlib.import_module(module_name)

@@ -12,6 +12,7 @@ def main(*args):
 		mp.set_start_method('spawn')
 		for module_name, area_name in zip(args[0::2], args[1::2]):
 			process = mp.Process(target=run, args=(module_name, area_name))
+			process.daemon = True
 			process.start()
 	else:
 		run(*args)

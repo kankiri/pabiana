@@ -4,7 +4,7 @@
 
 Pabiana is a minimalistic Python framework that lets you build intelligent applications distributed over several nodes.
 The architecture is inspired by the neocortex of the mammalian brain.
-The applications are intended to consist of a number of submodules called *areas*.
+The applications are intended to consist of a number of submodules called *Areas*.
 Messages are passed between these areas as a means of communication.
 Messaging over the network is handled by the ØMQ library.
 

@@ -1,1 +1,1 @@
-Pabiana>=0.0.7
+Pabiana>=0.1.0

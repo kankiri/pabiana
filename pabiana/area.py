@@ -75,22 +75,25 @@ class Area(Node):
 	
 	def subscriber_message(self, area_name, slot, message):
 		if area_name == self.clock_name:  #and slot == self.clock_slot:
+			logging.log(5, 'Clock Message from %s - %s', area_name, slot)
 			self.clock_callback()
 		elif slot in self.parsers[area_name]:
+			logging.debug('Subscriber Message from %s - %s', area_name, slot)
 			self.parsers[area_name][slot](area_name, slot, message)
 			self.received = True
 		else:
-			logging.warning('Message from unsubscribed Slot: %s:%s', area_name, slot)
+			logging.warning('Unsubscribed Message from %s - %s', area_name, slot)
 	
 	def receiver_message(self, func_name, message):
 		try:
+			logging.info('Receiver Message %s: %s', func_name, message)
 			func = self.triggers[func_name]
 			self.demand[func] = message
 		except KeyError:
 			if func_name == 'exit':
 				self.goon = False
 				return
-			logging.warning('Unavailable Trigger called: %s', func_name)
+			logging.warning('Unavailable Trigger called')
 	
 	def imprint(self, area_name, slot, message):
 		self.context[area_name][slot].appendleft(message)

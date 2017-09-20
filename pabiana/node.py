@@ -82,14 +82,12 @@ class Node:
 				for sock, event in socks:
 					if sock is self.receiver:
 						message = self.receiver.recv_json()
-						logging.debug('Receiver Message: %s', message)
 						func_name = message['function']
 						del message['function']
 						self.receiver_callback(func_name, message)
 					else:
 						pub_name = self.subscribers[sock]
 						[topic, message] = Node.decoder(sock.recv_multipart())
-						logging.debug('Subscriber Message: %s:%s', pub_name, topic)
 						self.subscriber_callback(pub_name, topic, message)
 				if self.timeout_callback is not None:
 					self.timeout_callback()

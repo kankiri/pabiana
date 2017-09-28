@@ -1,11 +1,16 @@
-#!/usr/bin/env python3
-
 from datetime import datetime
 
-from pabiana import Area, load_interfaces
+from pabiana import Area, repo
 
-NAME = 'timer'
-EMPTY = {}
+
+area = Area(repo['area-name'], host='0.0.0.0')
+config = {
+	'clock-name': 'clock',
+	'clock-slot': '##',
+	'context-values': {
+		'timers': {}
+	}
+}
 
 
 @area.register
@@ -27,14 +32,5 @@ def update():
 	for key in area.context['timers']:
 		if now > key:
 			for slot_name in area.context['timers'][key]:
-				area.publish(EMPTY, slot=slot_name)
+				area.publish('{}'.encode('utf-8'), slot=slot_name)
 			del area.context['timers'][key]
-
-
-if __name__ == '__main__':
-	load_interfaces('interfaces.json')
-	area = Area(NAME, host='0.0.0.0')
-	area.setup('clock', '##')
-	area.context['timers'] = {}
-	area.run()
-

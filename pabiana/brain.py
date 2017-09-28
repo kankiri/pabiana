@@ -66,7 +66,7 @@ def run(module_name, area_name):
 		if hasattr(mod.runner, 'setup'):
 			params = {}
 			if hasattr(mod, 'config'):
-				params.update(config)
+				params.update(mod.config)
 			mod.runner.setup(**params)
 		mod.runner.run()
 

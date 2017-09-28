@@ -1,12 +1,12 @@
 import signal
-import sys
 
 from pabiana import Node, repo, trigger
-from .setup import setup
+
+from utils import utils
 
 
 class Runner(Node):
-	def run(self):
+	def run(self, timeout=None):
 		self.goon = True
 		signal.signal(signal.SIGINT, self.stop)
 		try:
@@ -26,4 +26,4 @@ class Runner(Node):
 
 
 runner = Runner(repo['area-name'], host='0.0.0.0')
-
+setup = utils.setup

@@ -1,8 +1,13 @@
+import logging
 from contextlib import suppress
+
 from pabiana import Area, repo, trigger
-from .setup import setup
+
+from association import utils
+
 
 area = Area(repo['area-name'], host='0.0.0.0')
+setup = utils.setup
 config = {
 	'clock-name': 'clock',
 	'clock-slot': '#',

@@ -1,7 +1,10 @@
 from pabiana import Area, repo
-from .setup import setup
+
+from utils import utils
+
 
 area = Area(repo['area-name'], host='0.0.0.0')
+setup = utils.setup
 config = {
 	'clock-name': 'clock',
 	'context-values': {
@@ -49,4 +52,3 @@ def publish():
 			'temperature': area.context['temperature'],
 			'window-open': area.context['window-open']
 		})
-

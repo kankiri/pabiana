@@ -31,7 +31,7 @@ def control():
 		or area.context['weather'][''][0]['time-rcvd'] == area.time:
 			control_helper(in_temp, out_temp, win_open)
 	
-	with suppress(Exception):
+	with suppress(IndexError):
 		if area.context['console']['input'][0]['time-rcvd'] == area.time:
 			if area.context['console']['input'][0]['signal'] == 'window-open':
 				trigger('smarthome', 'window', {'open': True})
@@ -59,7 +59,7 @@ def control_helper(in_temp, out_temp, win_open):
 @area.pulse
 def publish():
 	if area.time % 8 == 0:
-		with suppress(Exception):
+		with suppress(IndexError):
 			logging.debug(
 				'Inside Temp: %s, Outside Temp: %s, Window Open: %s', 
 				area.context['smarthome'][''][0]['temperature'],

@@ -60,17 +60,17 @@ class Node:
 		self.subscriber_callback = subscriber_callback
 		logging.info('Listening to %s', subscriptions.keys())
 	
-	def publish(self, message, slot=None):
+	def publish(self, message_dict, slot=None):
 		"""
-		Publishes the given message from the optional slot.
+		Publishes the given message dictionary from the optional slot.
 		"""
 		if self.publisher is None:
 			self.publisher = create_publisher(own_name=self.name, host=self.host)
 		if slot is None:
-			self.publisher.send_json(message)
+			self.publisher.send_json(message_dict)
 		else:
-			message = json.dumps(message)
-			self.publisher.send_multipart([slot.encode('utf-8'), message.encode('utf-8')])
+			message_dict = json.dumps(message_dict)
+			self.publisher.send_multipart([slot.encode('utf-8'), message_dict.encode('utf-8')])
 	
 	def run(self, timeout=1000):
 		self.goon = True

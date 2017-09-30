@@ -7,7 +7,7 @@ from os import path
 
 import pip
 
-from . import load_interfaces, repo
+from . import _default_clock, load_interfaces, repo
 
 
 def main(*args):
@@ -16,6 +16,9 @@ def main(*args):
 	if '-X' in args:
 		stop_pip = True
 		args.remove('-X')
+	if '-C' in args:
+		args.append('clock:clock')
+		args.remove('-C')
 	if len(args) > 1:
 		logging.info('Starting %s processes', len(args))
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
@@ -41,7 +44,13 @@ def run(module_area_name, stop_pip=False):
 	if not stop_pip and path.isfile(req_path):
 		pip.main(['install', '--upgrade', '-r', req_path])
 	
-	mod = importlib.import_module(module_name)
+	try:
+		mod = importlib.import_module(module_name)
+	except ImportError:
+		if module_name is 'clock' and area_name is 'clock':
+			mod = _default_clock
+		else:
+			raise
 	
 	if hasattr(mod, 'setup'):
 		mod.setup()

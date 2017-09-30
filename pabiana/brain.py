@@ -11,10 +11,12 @@ from . import load_interfaces, repo
 
 
 def main(*args):
+	args = list(args)
 	stop_pip = False
 	if '-X' in args:
 		stop_pip = True
-	if len(args)-int(stop_pip) > 1:
+		args.remove('-X')
+	if len(args) > 1:
 		logging.info('Starting %s processes', len(args))
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
@@ -22,7 +24,7 @@ def main(*args):
 			process = mp.Process(target=run, args=(module_area_name, stop_pip))
 			process.start()
 	else:
-		run(*args, stop_pip)
+		run(*args, stop_pip=stop_pip)
 
 
 def run(module_area_name, stop_pip=False):

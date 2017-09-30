@@ -47,10 +47,8 @@ def run(module_area_name, stop_pip=False):
 	try:
 		mod = importlib.import_module(module_name)
 	except ImportError:
-		logging.info('Import Error %s:%s', module_name, area_name)
-		if module_name is 'clock' and area_name is 'clock':
+		if module_name == 'clock' and area_name == 'clock':
 			mod = _default_clock
-			logging.info('Module %s', mod)
 		else:
 			raise
 	

@@ -93,6 +93,7 @@ class Node:
 		finally:
 			self.zmq.destroy(linger=2000)
 			logging.debug('Context destroyed')
+			logging.shutdown()
 	
 	def stop(self, *args, **kwargs):
 		self.goon = False

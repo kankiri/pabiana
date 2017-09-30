@@ -24,15 +24,18 @@ def main(*args):
 
 def run(module_area_name):
 	module_name, area_name = module_area_name.split(':')
-	intf_path = path.join(os.getcwd(), 'interfaces.json')
+	repo['base-path'] = os.getcwd()
+	repo['module-name'] = module_name
+	repo['area-name'] = area_name
+	
+	intf_path = path.join(repo['base-path'], 'interfaces.json')
 	if path.isfile(intf_path):
 		load_interfaces(intf_path)
-
-	req_path = path.join(os.getcwd(), module_name, 'requirements.txt')
+	
+	req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
 	if path.isfile(req_path):
 		pip.main(['install', '--upgrade', '-r', req_path])
 	
-	repo['area-name'] = area_name
 	mod = importlib.import_module(module_name)
 	
 	if hasattr(mod, 'setup'):

@@ -1,10 +1,11 @@
-import logging
 import importlib
+import logging
 import multiprocessing as mp
 import os
-from os import path
-import pip
 import signal
+from os import path
+
+import pip
 
 from . import load_interfaces, repo
 

@@ -1,5 +1,5 @@
-from collections import deque
 import logging
+from collections import deque
 
 from .node import Node
 
@@ -75,18 +75,18 @@ class Area(Node):
 	
 	def subscriber_message(self, area_name, slot, message):
 		if area_name == self.clock_name:  #and slot == self.clock_slot:
-			logging.log(5, 'Clock Message from %s - %s', area_name, slot)
+			logging.log(5, 'Clock Message from "%s" - "%s"', area_name, slot)
 			self.clock_callback()
 		elif slot in self.parsers[area_name]:
-			logging.debug('Subscriber Message from %s - %s', area_name, slot)
+			logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
 			self.parsers[area_name][slot](area_name, slot, message)
 			self.received = True
 		else:
-			logging.warning('Unsubscribed Message from %s - %s', area_name, slot)
+			logging.warning('Unsubscribed Message from "%s" - "%s"', area_name, slot)
 	
 	def receiver_message(self, func_name, message):
 		try:
-			logging.debug('Receiver Message %s: %s', func_name, message)
+			logging.debug('Receiver Message "%s": "%s"', func_name, message)
 			func = self.triggers[func_name]
 			self.demand[func] = message
 		except KeyError:

@@ -10,7 +10,6 @@ This module also provides functions to call a Remote Trigger and to create Publi
 
 import json
 import logging
-import os
 import signal
 
 import zmq

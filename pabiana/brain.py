@@ -16,7 +16,7 @@ def main(*args):
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
 		for module_area_name in args:
-			process = mp.Process(target=run, args=(module_area_name))
+			process = mp.Process(target=run, args=(module_area_name,))
 			process.start()
 	else:
 		run(*args)

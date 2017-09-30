@@ -23,7 +23,7 @@ def main(*args):
 			process = mp.Process(target=run, args=(module_area_name, run_pip))
 			process.start()
 	else:
-		run(*args)
+		run(*args, run_pip)
 
 
 def run(module_area_name, run_pip=True):

@@ -86,7 +86,7 @@ class Area(Node):
 	
 	def receiver_message(self, func_name, message):
 		try:
-			logging.info('Receiver Message %s: %s', func_name, message)
+			logging.debug('Receiver Message %s: %s', func_name, message)
 			func = self.triggers[func_name]
 			self.demand[func] = message
 		except KeyError:

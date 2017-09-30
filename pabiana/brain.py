@@ -11,22 +11,21 @@ from . import load_interfaces, repo
 
 
 def main(*args):
-	run_pip = True
+	stop_pip = False
 	if '-X' in args:
-		run_pip = False
-		args.remove('-X')
-	if len(args) > 1:
+		stop_pip = True
+	if len(args)-int(stop_pip) > 1:
 		logging.info('Starting %s processes', len(args))
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
 		for module_area_name in args:
-			process = mp.Process(target=run, args=(module_area_name, run_pip))
+			process = mp.Process(target=run, args=(module_area_name, stop_pip))
 			process.start()
 	else:
-		run(*args, run_pip)
+		run(*args, stop_pip)
 
 
-def run(module_area_name, run_pip=True):
+def run(module_area_name, stop_pip=False):
 	module_name, area_name = module_area_name.split(':')
 	repo['base-path'] = os.getcwd()
 	repo['module-name'] = module_name
@@ -37,7 +36,7 @@ def run(module_area_name, run_pip=True):
 		load_interfaces(intf_path)
 	
 	req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
-	if run_pip and path.isfile(req_path):
+	if not stop_pip and path.isfile(req_path):
 		pip.main(['install', '--upgrade', '-r', req_path])
 	
 	mod = importlib.import_module(module_name)

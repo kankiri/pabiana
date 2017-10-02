@@ -48,24 +48,24 @@ class Area(Node):
 		
 		def schedule():
 			func(); old()
-		
+			
 		self.call_triggers = schedule
 		return func
 	
 	def call_triggers(self):
 		if self.loop:
 			self.demand.update(self.loop)
+			self.loop.clear()
 		for func in self.demand:
 			try:
 				func(**self.demand[func])
 			except TypeError:
 				logging.warning('Trigger Parameter Error')
+		self.demand.clear()
 	
 	def clock_callback(self):
 		if self.loop or self.demand:
 			self.call_triggers()
-			self.loop.clear()
-			self.demand.clear()
 		if self.received and self.alt_function is not None:
 			self.received = False
 			self.alt_function()
@@ -74,7 +74,7 @@ class Area(Node):
 		self.time += 1
 	
 	def subscriber_message(self, area_name, slot, message):
-		if area_name == self.clock_name:  #and slot == self.clock_slot:
+		if area_name == self.clock_name:  # and slot == self.clock_slot:
 			logging.log(5, 'Clock Message from "%s" - "%s"', area_name, slot)
 			self.clock_callback()
 		elif slot in self.parsers[area_name]:

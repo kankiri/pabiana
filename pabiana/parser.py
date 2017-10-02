@@ -3,7 +3,7 @@ from . import area
 
 
 def init_simple(area_name, slot):
-	area.context[name][slot] = None
+	area.context[area_name][slot] = None
 
 
 def imprint_simple(area_name, slot, message):

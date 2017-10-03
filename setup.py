@@ -7,7 +7,7 @@ setup(
 	name='Pabiana',
 	version='0.1.1',
 	packages=find_packages(),
-	install_requires=['pyzmq>=16.0.2'],
+	install_requires=['pip>=9.0.1', 'pyzmq>=16.0.2'],
 	setup_requires=['pytest-runner>=2.12.1'],
 	tests_require=['pytest>=3.2.2'],
 	zip_safe=False,

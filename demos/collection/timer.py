@@ -24,6 +24,7 @@ def place(slot_name, dttime):
 		area.context['timers'][dttime].add(slot_name)
 	except KeyError:
 		area.context['timers'][dttime] = {slot_name}
+	area.publish({'status': 'placed'}, slot=slot_name)
 
 
 @area.pulse
@@ -32,5 +33,5 @@ def update():
 	for key in area.context['timers']:
 		if now > key:
 			for slot_name in area.context['timers'][key]:
-				area.publish('{}'.encode('utf-8'), slot=slot_name)
+				area.publish({'status': 'reminder'}, slot=slot_name)
 			del area.context['timers'][key]

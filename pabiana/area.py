@@ -5,8 +5,8 @@ from .node import Node
 
 
 class Area(Node):
-	def __init__(self, name, host=None):
-		super().__init__(name, host)
+	def __init__(self, name, host=None, global_interfaces=None):
+		super().__init__(name, host, global_interfaces)
 		self.clock_name = None
 		self.clock_slot = None
 		self.received = None

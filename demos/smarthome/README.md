@@ -17,7 +17,7 @@ To run one of them, use:
     python3 -m pabiana weather:weather
 
 The first *weather* part of the parameter specifies the folder name of the submodule.
-The second part specifies the Area name, which is the same as the first one in this example.
+The second part specifies the Area name, which is identical in this example.
 
 You can also start more than one Area with a single command.
 

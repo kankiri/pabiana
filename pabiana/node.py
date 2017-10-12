@@ -58,7 +58,7 @@ class Node:
 			self.poller.register(subscriber, zmq.POLLIN)
 			self.subscribers[subscriber] = pub_name
 		self.subscriber_callback = subscriber_callback
-		logging.info('Listening to %s', subscriptions.keys())
+		logging.info('Listening to %s', list(subscriptions))
 	
 	def publish(self, message_dict, slot=None):
 		"""

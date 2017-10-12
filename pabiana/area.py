@@ -94,14 +94,15 @@ class Area(Node):
 		if area_name == self.clock_name:  # and slot == self.clock_slot:
 			logging.log(5, 'Clock Message from "%s" - "%s"', area_name, slot)
 			self.clock_callback()
-		try:
-			self.parsers[area_name][slot](area_name, slot, message)
-			if area_name in self.alt_functions and slot in self.alt_functions[area_name]:
-				self.alterations.add(self.alt_functions[area_name][slot])
-			self.received = True
-			logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
-		except KeyError:
-			logging.warning('Unsubscribed Message from "%s" - "%s"', area_name, slot)
+		else:
+			try:
+				self.parsers[area_name][slot](area_name, slot, message)
+				if area_name in self.alt_functions and slot in self.alt_functions[area_name]:
+					self.alterations.add(self.alt_functions[area_name][slot])
+				self.received = True
+				logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
+			except KeyError:
+				logging.warning('Unsubscribed Message from "%s" - "%s"', area_name, slot)
 	
 	def receiver_message(self, func_name, message):
 		try:

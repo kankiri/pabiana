@@ -2,6 +2,9 @@ from collections import deque
 from . import area
 
 
+length_parameter = 100
+
+
 def init_simple(area_name, slot):
 	area.context[area_name][slot] = None
 

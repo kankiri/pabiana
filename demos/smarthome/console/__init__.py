@@ -26,4 +26,4 @@ class Runner(Node):
 
 
 runner = Runner(repo['area-name'], host='0.0.0.0')
-setup = utils.setup
+premise = utils.setup

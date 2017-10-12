@@ -52,8 +52,8 @@ def run(module_area_name, stop_pip=False):
 		else:
 			raise
 	
-	if hasattr(mod, 'setup'):
-		mod.setup()
+	if hasattr(mod, 'premise'):
+		mod.premise()
 	
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):

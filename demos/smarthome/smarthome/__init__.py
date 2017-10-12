@@ -4,7 +4,7 @@ from utils import utils
 
 
 area = Area(repo['area-name'], host='0.0.0.0')
-setup = utils.setup
+premise = utils.setup
 config = {
 	'clock-name': 'clock',
 	'context-values': {

@@ -15,9 +15,11 @@ class Area(Node):
 		self.time = 1
 		self.demand = {}
 		self.loop = {}
+		self.alt_functions = {}
 		self.context = {}
 		self.triggers = {}
 		self.parsers = {}
+		self.alterations = set()
 	
 	def register(self, func):
 		"""
@@ -26,12 +28,23 @@ class Area(Node):
 		self.triggers[func.__name__] = func
 		return func
 	
-	def alteration(self, func):
+	def alteration(self, internal_func=None, area_name=None, slot=''):
 		"""
 		Registers this function to be called when context changes.
 		"""
-		self.alt_function = func
-		return func
+		def decorator1(func):
+			self.alt_function = func
+			return func
+		
+		def decorator2(func):
+			if area_name not in self.alt_functions:
+				self.alt_functions[area_name] = {}
+			self.alt_functions[area_name][slot] = func
+			return func
+		
+		if internal_func:
+			return decorator1(internal_func)
+		return decorator2
 	
 	def pulse(self, func):
 		"""
@@ -66,9 +79,13 @@ class Area(Node):
 	def clock_callback(self):
 		if self.loop or self.demand:
 			self.call_triggers()
-		if self.received and self.alt_function is not None:
+		if self.received:
 			self.received = False
-			self.alt_function()
+			if self.alt_function is not None:
+				self.alt_function()
+			if self.alterations:
+				for func in self.alterations:
+					func()
 		if self.pulse_function is not None:
 			self.pulse_function()
 		self.time += 1
@@ -77,11 +94,13 @@ class Area(Node):
 		if area_name == self.clock_name:  # and slot == self.clock_slot:
 			logging.log(5, 'Clock Message from "%s" - "%s"', area_name, slot)
 			self.clock_callback()
-		elif slot in self.parsers[area_name]:
-			logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
+		try:
 			self.parsers[area_name][slot](area_name, slot, message)
+			if area_name in self.alt_functions and slot in self.alt_functions[area_name]:
+				self.alterations.add(self.alt_functions[area_name][slot])
 			self.received = True
-		else:
+			logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
+		except KeyError:
 			logging.warning('Unsubscribed Message from "%s" - "%s"', area_name, slot)
 	
 	def receiver_message(self, func_name, message):
@@ -111,11 +130,13 @@ class Area(Node):
 			self.context[area_name] = {}
 			self.parsers[area_name] = {}
 			node_subs[area_name] = {'topics': set()}
-			for slot in subscriptions[area_name]:
+			for slot in set(subscriptions[area_name]):
+				if type(slot) is not str:
+					raise ValueError
 				try:
 					self.parsers[area_name][slot] = subscriptions[area_name][slot]['parser']
 					subscriptions[area_name][slot]['init'](area_name, slot)
-				except:
+				except (TypeError, KeyError):
 					self.parsers[area_name][slot] = self.imprint
 					self.init_slot(area_name, slot)
 				node_subs[area_name]['topics'].add(slot)
@@ -129,4 +150,4 @@ class Area(Node):
 			self.loop[func] = params
 		else:
 			self.received = True
-
+			# TODO: autoloop from trigger problem

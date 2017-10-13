@@ -36,9 +36,22 @@ def test_register():
 
 def test_alteration():
 	area = Area('test')
-	result = area.alteration(test_alteration)
-	assert result is test_alteration
-	assert area.alt_function is test_alteration
+	
+	@area.alteration
+	def test1():
+		pass
+	
+	@area.alteration(area_name='test-area1')
+	def test2():
+		pass
+	
+	@area.alteration(area_name='test-area2', slot='test-slot')
+	def test3():
+		pass
+	
+	assert area.processors[None] is test1
+	assert area.processors['test-area1'][None] is test2
+	assert area.processors['test-area2']['test-slot'] is test3
 
 
 def test_pulse():
@@ -48,26 +61,7 @@ def test_pulse():
 	assert area.pulse_function is test_pulse
 
 
-def test_scheduling():
-	area = Area('test')
-	test_value = ''
-	
-	def old():
-		nonlocal test_value
-		test_value += 'old'
-	
-	def new():
-		nonlocal test_value
-		test_value += 'new'
-	
-	area.call_triggers = old
-	result = area.scheduling(new)
-	assert result is new
-	area.call_triggers()
-	assert test_value == 'newold'
-
-
-def test_call_triggers():
+def test_clock_callback():
 	area = Area('test')
 	test_value = ''
 	
@@ -80,8 +74,8 @@ def test_call_triggers():
 		test_value += value
 	
 	area.demand[test1] = {'value': 'test1'}
-	area.loop[test2] = {'value': 'test2'}
-	area.call_triggers()
+	area.demand_loop[test2] = {'value': 'test2'}
+	area.clock_callback()
 	assert test_value == 'test1test2' or test_value == 'test2test1'
 
 
@@ -122,82 +116,10 @@ def test_setup_2():
 	assert len(area.parsers) == 0
 
 
-def test_autoloop_1():
-	area = Area('test')
-	assert not area.received
-	area.autoloop()
-	assert area.received is True
-
-
 def test_autoloop_2():
 	area = Area('test')
-	assert len(area.loop) == 0
+	assert len(area.demand_loop) == 0
 	area.autoloop(test_autoloop_2, {'value': 5})
-	assert len(area.loop) == 1
-	assert test_autoloop_2 in area.loop
-	assert area.loop[test_autoloop_2]['value'] == 5
-
-
-def test_area():
-	area = Area('test')
-	area.setup_receiver = lambda *args, **kwargs: None
-	area.setup_subscribers = lambda *args, **kwargs: None
-	
-	test_value = ''
-	
-	@area.register
-	def demand_me_1(value):
-		nonlocal test_value
-		test_value += value
-	
-	@area.register
-	def demand_me_2(value):
-		nonlocal test_value
-		test_value += value
-	
-	@area.alteration
-	def forward():
-		nonlocal test_value
-		test_value += 'forward'
-	
-	@area.pulse
-	def everytime():
-		nonlocal test_value
-		test_value += 'everytime'
-	
-	@area.scheduling
-	def scheduler():
-		nonlocal test_value
-		test_value += 'scheduler'
-	
-	def parser(area_name, slot, message):
-		nonlocal test_value
-		test_value += area_name
-	
-	subs = {
-		'area1': {'slot1': {'init': lambda *args, **kwargs: None, 'parser': parser}},
-		'area2': {
-			'slot1': {'init': area.init_slot, 'parser': parser},
-			'slot2': {'init': area.init_slot, 'parser': parser}
-		}
-	}
-	area.setup('clock100', '001', subs)
-	
-	area.autoloop(demand_me_1, {'value': 'dm_1_value'})
-	area.subscriber_message('clock100', '001', {})
-	assert test_value == 'scheduler' + 'dm_1_value' + 'everytime'
-	test_value = ''
-	
-	area.receiver_message('demand_me_2', {'value': 'dm_2_value'})
-	area.subscriber_message('clock100', '001', {})
-	assert test_value == 'scheduler' + 'dm_2_value' + 'everytime'
-	test_value = ''
-	
-	area.autoloop(demand_me_2, {'value': 'dm_2_value'})
-	area.subscriber_message('area1', 'slot1', {'value': 'area1_value'})
-	area.receiver_message('demand_me_1', {'value': 'dm_1_value'})
-	assert test_value == 'area1'
-	area.subscriber_message('clock100', '001', {})
-	assert test_value == 'area1' + 'scheduler' + 'dm_1_value' + 'dm_2_value' + 'forward' + 'everytime' \
-		or test_value == 'area1' + 'scheduler' + 'dm_2_value' + 'dm_1_value' + 'forward' + 'everytime'
-
+	assert len(area.demand_loop) == 1
+	assert test_autoloop_2 in area.demand_loop
+	assert area.demand_loop[test_autoloop_2]['value'] == 5

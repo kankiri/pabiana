@@ -86,7 +86,7 @@ class Node:
 						self.receiver_callback(func_name, message)
 					else:
 						pub_name = self.subscribers[sock]
-						[topic, message] = Node.decoder(sock.recv_multipart())
+						[topic, message] = Node._decoder(sock.recv_multipart())
 						self.subscriber_callback(pub_name, topic, message)
 				if self.timeout_callback is not None:
 					self.timeout_callback()
@@ -99,7 +99,7 @@ class Node:
 		self.goon = False
 	
 	@staticmethod
-	def decoder(rcvd):
+	def _decoder(rcvd):
 		if len(rcvd) == 1:
 			rcvd = [b''] + rcvd
 		# TODO: make faster

@@ -1,5 +1,5 @@
 import logging
-from collections import deque
+from collections import deque, Mapping
 
 from .node import Node
 
@@ -9,17 +9,17 @@ class Area(Node):
 		super().__init__(name, host, global_interfaces)
 		self.clock_name = None
 		self.clock_slot = None
-		self.received = None
-		self.alt_function = None
 		self.pulse_function = None
+		self.schedule_function = Area._call
 		self.time = 1
-		self.demand = {}
-		self.loop = {}
-		self.alt_functions = {}
 		self.context = {}
-		self.triggers = {}
 		self.parsers = {}
+		self.triggers = {}
+		self.demand = {}
+		self.demand_loop = {}
+		self.processors = {}
 		self.alterations = set()
+		self.alts_loop = set()
 	
 	def register(self, func):
 		"""
@@ -32,19 +32,18 @@ class Area(Node):
 		"""
 		Registers this function to be called when context changes.
 		"""
-		def decorator1(func):
-			self.alt_function = func
-			return func
-		
-		def decorator2(func):
-			if area_name not in self.alt_functions:
-				self.alt_functions[area_name] = {}
-			self.alt_functions[area_name][slot] = func
+		def decorator(func):
+			if area_name is None:
+				self.processors[None] = func
+			else:
+				if area_name not in self.processors:
+					self.processors[area_name] = {}
+				self.processors[area_name][slot] = func
 			return func
 		
 		if internal_func:
-			return decorator1(internal_func)
-		return decorator2
+			return decorator(internal_func)
+		return decorator
 	
 	def pulse(self, func):
 		"""
@@ -57,35 +56,22 @@ class Area(Node):
 		"""
 		Registers this function to be called directly before call_triggers.
 		"""
-		old = self.call_triggers
-		
-		def schedule():
-			func(); old()
-			
-		self.call_triggers = schedule
+		def combined(*args):
+			Area._call(*func(args))
+		self.schedule_function = combined
 		return func
 	
-	def call_triggers(self):
-		if self.loop:
-			self.demand.update(self.loop)
-			self.loop.clear()
-		for func in self.demand:
-			try:
-				func(**self.demand[func])
-			except TypeError:
-				logging.warning('Trigger Parameter Error')
-		self.demand.clear()
-	
 	def clock_callback(self):
-		if self.loop or self.demand:
-			self.call_triggers()
-		if self.received:
-			self.received = False
-			if self.alt_function is not None:
-				self.alt_function()
-			if self.alterations:
-				for func in self.alterations:
-					func()
+		if self.demand_loop:
+			self.demand.update(self.demand_loop)
+			self.demand_loop.clear()
+		if self.alts_loop:
+			self.alterations.update(self.alts_loop)
+			self.alts_loop.clear()
+		if self.demand or self.alterations:
+			self.schedule_function(self.demand, self.alterations)
+			self.demand.clear()
+			self.alterations.clear()
 		if self.pulse_function is not None:
 			self.pulse_function()
 		self.time += 1
@@ -97,15 +83,16 @@ class Area(Node):
 		else:
 			try:
 				self.parsers[area_name][slot](area_name, slot, message)
-				if area_name in self.alt_functions:
-					if slot in self.alt_functions[area_name]:
-						self.alterations.add(self.alt_functions[area_name][slot])
-					elif None in self.alt_functions[area_name]:
-						self.alterations.add(self.alt_functions[area_name][None])
-				self.received = True
+				if area_name in self.processors:
+					if slot in self.processors[area_name]:
+						self.alterations.add(self.processors[area_name][slot])
+					elif None in self.processors[area_name]:
+						self.alterations.add(self.processors[area_name][None])
+				elif None in self.processors:
+					self.alterations.add(self.processors[None])
 				logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
 			except KeyError:
-				logging.warning('Unsubscribed Message from "%s" - "%s"', area_name, slot)
+				logging.debug('Unsubscribed Message from "%s" - "%s"', area_name, slot)
 	
 	def receiver_message(self, func_name, message):
 		try:
@@ -149,9 +136,20 @@ class Area(Node):
 		self.setup_receiver(self.receiver_message)
 		self.setup_subscribers(node_subs, self.subscriber_message)
 	
-	def autoloop(self, func=None, params={}):
-		if func is not None:
-			self.loop[func] = params
+	def autoloop(self, trigger_function=None, params={}, area_name=None, slot=None):
+		if trigger_function is not None:
+			self.demand_loop[trigger_function] = params
+		elif area_name is not None:
+			self.alts_loop.add(self.processors[area_name][slot])
 		else:
-			self.received = True
-			# TODO: autoloop from trigger problem
+			self.alts_loop.add(self.processors[area_name])
+	
+	@staticmethod
+	def _call(*args):
+		for functions in args:
+			if isinstance(functions, Mapping):
+				for func in functions:
+					func(**functions[func])
+			else:
+				for func in functions:
+					func()

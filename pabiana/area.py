@@ -28,7 +28,7 @@ class Area(Node):
 		self.triggers[func.__name__] = func
 		return func
 	
-	def alteration(self, internal_func=None, area_name=None, slot=''):
+	def alteration(self, internal_func=None, area_name=None, slot=None):
 		"""
 		Registers this function to be called when context changes.
 		"""
@@ -97,8 +97,11 @@ class Area(Node):
 		else:
 			try:
 				self.parsers[area_name][slot](area_name, slot, message)
-				if area_name in self.alt_functions and slot in self.alt_functions[area_name]:
-					self.alterations.add(self.alt_functions[area_name][slot])
+				if area_name in self.alt_functions:
+					if slot in self.alt_functions[area_name]:
+						self.alterations.add(self.alt_functions[area_name][slot])
+					elif None in self.alt_functions[area_name]:
+						self.alterations.add(self.alt_functions[area_name][None])
 				self.received = True
 				logging.debug('Subscriber Message from "%s" - "%s"', area_name, slot)
 			except KeyError:

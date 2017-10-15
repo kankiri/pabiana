@@ -35,15 +35,14 @@ class Node:
 	def rslv(self, interface):
 		return rslv('{}-{}'.format(self.name, interface))
 	
-	def setup_receiver(self, receiver_callback):
+	def setup_receiver(self):
 		self.receiver = self.zmq.socket(zmq.PULL)
 		host = self.host or self.rslv('rcv')['ip']
 		self.receiver.bind('tcp://{}:{}'.format(host, self.rslv('rcv')['port']))
 		self.poller.register(self.receiver, zmq.POLLIN)
-		self.receiver_callback = receiver_callback
 		logging.info('Waiting for Connections on %s:%s', host, self.rslv('rcv')['port'])
 	
-	def setup_subscribers(self, subscriptions, subscriber_callback):
+	def setup_subscribers(self, subscriptions):
 		self.subscribers = {}
 		for pub_name in subscriptions:
 			address = interfaces[pub_name + '-pub']
@@ -55,7 +54,6 @@ class Node:
 			subscriber.connect('tcp://{}:{}'.format(address['ip'], address['port']))
 			self.poller.register(subscriber, zmq.POLLIN)
 			self.subscribers[subscriber] = pub_name
-		self.subscriber_callback = subscriber_callback
 		logging.info('Listening to %s', list(subscriptions))
 	
 	def receiver_callback(trigger_name, parameters):

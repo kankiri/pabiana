@@ -54,7 +54,7 @@ class Area(Node):
 	
 	def scheduling(self, func):
 		"""
-		Registers this function to be called directly before call_triggers.
+		Registers this function as scheduler. Return function objects to be called.
 		"""
 		def combined(*args):
 			Area._call(*func(args))

@@ -58,7 +58,7 @@ class Node:
 		self.subscriber_callback = subscriber_callback
 		logging.info('Listening to %s', list(subscriptions))
 	
-	def receiver_callback(trigger_name, message):
+	def receiver_callback(trigger_name, parameters):
 		pass
 	
 	def subscriber_callback(publisher_name, topic, message):
@@ -72,10 +72,10 @@ class Node:
 				socks = self.poller.poll(timeout)
 				for sock, event in socks:
 					if sock is self.receiver:
-						message = self.receiver.recv_json()
-						func_name = message['function']
-						del message['function']
-						self.receiver_callback(func_name, message)
+						parameters = self.receiver.recv_json()
+						trigger_name = parameters['trigger']
+						del parameters['trigger']
+						self.receiver_callback(trigger_name, parameters)
 					else:
 						pub_name = self.subscribers[sock]
 						[topic, message] = Node._decoder(sock.recv_multipart())
@@ -112,7 +112,7 @@ class Node:
 		return [topic, message]
 
 
-def trigger(rcv_name, trigger_name, params={}, context=zmq.Context.instance()):
+def trigger(rcv_name, trigger_name, parameters={}, context=zmq.Context.instance()):
 	"""
 	Sends a Request for a Remote Trigger to a Receiver Interface.
 	"""
@@ -121,8 +121,8 @@ def trigger(rcv_name, trigger_name, params={}, context=zmq.Context.instance()):
 		context = zmq.Context()
 	requester = context.socket(zmq.PUSH)
 	requester.connect('tcp://{}:{}'.format(address['ip'], address['port']))
-	params['function'] = trigger_name
-	requester.send_json(params)
+	parameters['trigger'] = trigger_name
+	requester.send_json(parameters)
 	requester.close()
 	logging.debug('Trigger %s of %s called', trigger_name, rcv_name)
 

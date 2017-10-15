@@ -23,9 +23,7 @@ class Node:
 		self.host = host
 		self.goon = None
 		self.receiver = None
-		self.receiver_callback = None
 		self.subscribers = None
-		self.subscriber_callback = None
 		self.publisher = None
 		self.timeout_callback = None
 		self.zmq = zmq.Context.instance()
@@ -60,17 +58,11 @@ class Node:
 		self.subscriber_callback = subscriber_callback
 		logging.info('Listening to %s', list(subscriptions))
 	
-	def publish(self, message_dict, slot=None):
-		"""
-		Publishes the given message dictionary from the optional slot.
-		"""
-		if self.publisher is None:
-			self.publisher = create_publisher(own_name=self.name, host=self.host)
-		if slot is None:
-			self.publisher.send_json(message_dict)
-		else:
-			message_dict = json.dumps(message_dict)
-			self.publisher.send_multipart([slot.encode('utf-8'), message_dict.encode('utf-8')])
+	def receiver_callback(trigger_name, message):
+		pass
+	
+	def subscriber_callback(publisher_name, topic, message):
+		pass
 	
 	def run(self, timeout=1000):
 		self.goon = True
@@ -97,6 +89,18 @@ class Node:
 	
 	def stop(self, *args, **kwargs):
 		self.goon = False
+	
+	def publish(self, message_dict, slot=None):
+		"""
+		Publishes the given message dictionary from the optional slot.
+		"""
+		if self.publisher is None:
+			self.publisher = create_publisher(own_name=self.name, host=self.host)
+		if slot is None:
+			self.publisher.send_json(message_dict)
+		else:
+			message_dict = json.dumps(message_dict)
+			self.publisher.send_multipart([slot.encode('utf-8'), message_dict.encode('utf-8')])
 	
 	@staticmethod
 	def _decoder(rcvd):

@@ -38,11 +38,11 @@ def window(open):
 
 @area.scheduling
 def schedule():
-	if keep_temp in area.demand:
-		area.demand.pop(increase_temp, None)
-		area.demand.pop(lower_temp, None)
-	elif lower_temp in area.demand:
-		area.demand.pop(increase_temp, None)
+	if keep_temp in area._demand:
+		area._demand.pop(increase_temp, None)
+		area._demand.pop(lower_temp, None)
+	elif lower_temp in area._demand:
+		area._demand.pop(increase_temp, None)
 
 
 @area.pulse

@@ -12,7 +12,7 @@ subscriptions = {}  # type: Dict[str, Any]
 
 
 @pytest.fixture(scope='module', autouse=True)
-def interfaces():
+def setup():
 	interfaces.update({
 		'test-pub': {'ip': '127.0.0.1', 'port': 8279},
 		'test-rcv': {'ip': '127.0.0.1', 'port': 8280},
@@ -29,16 +29,34 @@ def interfaces():
 	})
 
 
-def test_run_stop_zmq():
+def test_run_stop():
 	class TestNode(Node): pass
 	TestNode.__abstractmethods__ = set()
 
-	node = TestNode(name='test', interfaces=interfaces)
-	node.setup(puller=False, subscriptions=subscriptions)
-	t = Thread(target=node.run, kwargs={'timeout': 0, 'linger': 0})
+	def stop(value):
+		time.sleep(0.5)
+		value.stop()
+
+	node = TestNode(name='area2', interfaces=interfaces)
+	t = Thread(target=stop, args=(node,))
 
 	t.start()
-	time.sleep(0.25)
-	node.stop()
-	time.sleep(0.25)
+	node.run(timeout=0, linger=0)
+	assert not t.isAlive()
+
+
+def test_setup_run_stop():
+	class TestNode(Node): pass
+	TestNode.__abstractmethods__ = set()
+
+	def stop(value):
+		time.sleep(0.5)
+		value.stop()
+
+	node = TestNode(name='area2', interfaces=interfaces)
+	node.setup(puller=False, subscriptions=subscriptions)
+	t = Thread(target=stop, args=(node,))
+
+	t.start()
+	node.run(timeout=0, linger=0)
 	assert not t.isAlive()

@@ -4,20 +4,19 @@ from typing import Any, Dict
 
 import zmq
 
-from .node import Node
-from .utils import Socket
-from .. import abcs
-from ..utils import Interfaces
+from ..abcs import Area
+from .utils import Socket, Context
 
 
-class Publisher(abcs.Publisher, Node):
-	def __init__(self, name: str, interfaces: Interfaces):
-		super().__init__(name, interfaces)
+class Publisher:
+	def __init__(self, area: Area, context: Context):
+		self._area = area  # type: Area
+		self._zmq = context  # type: Context
 		self._publisher = None  # type: Socket
 	
 	def publish(self, message: dict, slot: str=None):
 		if self._publisher is None:
-			ip, port, host = self.rslv('pub')
+			ip, port, host = self._area.rslv('pub')
 			self._publisher = self._zmq.socket(zmq.PUB)
 			self._publisher.bind('tcp://{}:{}'.format(host or ip, port))
 		message = json.dumps(message)
@@ -25,9 +24,13 @@ class Publisher(abcs.Publisher, Node):
 		logging.debug('Message published at "%s"', slot)
 
 
-class Trigger(abcs.Trigger, Node):
+class Pusher:
+	def __init__(self, area: Area, context: Context):
+		self._area = area  # type: Area
+		self._zmq = context  # type: Context
+
 	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any]={}):
-		ip, port, host = self.rslv(name=target, interface='rcv')
+		ip, port, host = self._area.rslv(name=target, interface='rcv')
 		pusher = self._zmq.socket(zmq.PUSH)  # type: Socket
 		pusher.connect('tcp://{}:{}'.format(ip, port))
 		parameters['trigger'] = trigger

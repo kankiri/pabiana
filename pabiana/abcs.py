@@ -26,7 +26,7 @@ class Node(ABC):
 			name = self.name
 		key = '{}-{}'.format(name, interface)
 		host = None
-		if ['host'] in self.interfaces[key]:
+		if 'host' in self.interfaces[key]:
 			host = self.interfaces[key]['host']
 		return self.interfaces[key]['ip'], self.interfaces[key]['port'], host
 	
@@ -59,7 +59,15 @@ class Area(Node):
 		self.clock_name = None  # type: str
 		self.clock_slot = None  # type: str
 		self.context = {}  # type: dict
-	
+
+	@abstractmethod
+	def publish(self, message: dict, slot: str=None):
+		pass
+
+	@abstractmethod
+	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any]={}):
+		pass
+
 	@abstractmethod
 	def scheduling(self, func: Callable) -> Callable:
 		"""Registers this function as scheduler (only one)."""
@@ -159,16 +167,4 @@ class Area(Node):
 		This method should be induced by a syncing Node, like a common Clock.
 		This method should not be called from within the Area.
 		"""
-		pass
-
-
-class Publisher(Node):
-	@abstractmethod
-	def publish(self, message: dict, slot: str=None):
-		pass
-
-
-class Trigger(Node):
-	@abstractmethod
-	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any]={}):
 		pass

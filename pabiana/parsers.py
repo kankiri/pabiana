@@ -1,13 +1,14 @@
 from collections import deque
 from typing import Iterable, MutableMapping
 
-from .area import Area
+from pabiana.abcs import Area
 
 
 def init_full(area: Area, source: str, slots: Iterable[str]=None):
 	if slots is None:
 		area.context[source] = deque(maxlen=100)
 	else:
+		area.context[source] = {}
 		for slot in slots:
 			area.context[source][slot] = deque(maxlen=100)
 

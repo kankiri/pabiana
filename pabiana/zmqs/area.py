@@ -4,15 +4,15 @@ from typing import Any, Callable, Dict, Optional, Sequence, Set
 
 import zmq
 
-from .extensions import Publisher, Trigger
+from pabiana.parsers import init_full, imprint_full
+from .extensions import Publisher, Pusher
 from .node import Node
-from .parsers import init_full, imprint_full
 from .utils import caller
 from .. import abcs
 from ..utils import Interfaces
 
 
-class Area(abcs.Area, Node, Publisher, Trigger):
+class Area(Node, abcs.Area):
 	"""Class that implements the Pabiana Area interface based on the ZMQ Node class.
 
 	A ZMQ Pabiana Area can provide one Puller (as Receiver) and multiple Subscriber Interfaces.
@@ -20,17 +20,25 @@ class Area(abcs.Area, Node, Publisher, Trigger):
 	"""
 	def __init__(self, name: str, interfaces: Interfaces):
 		super().__init__(name, interfaces)
-		self._pulse_function = None
-		self._schedule_function = caller
-		self._triggers = {}  # type: Dict[str, Callable]
-		self._processors = {}  # type: Dict[Optional[str], Dict[Optional[str], Callable]]
+		self._schedule_function = caller  # type: Callable
+
+		self._triggers = {'exit': self.stop}  # type: Dict[str, Callable]
 		self._demand = {}  # type: Dict[Callable, Dict[str, Any]]
 		self._demand_loop = {}  # type: Dict[Callable, Dict[str, Any]]
+
+		self._processors = {}  # type: Dict[Optional[str], Dict[Optional[str], Callable]]
 		self._alterations = set()  # type: Set[Callable]
 		self._alts_loop = set()  # type: Set[Callable]
-		
-		self._triggers['exit'] = self.stop
-	
+
+		self._pulse_function = None  # type: Callable
+
+		self.publish = Publisher(self, self._zmq).publish
+		self.trigger = Pusher(self, self._zmq).trigger
+
+	def publish(self, message: dict, slot: str = None): pass
+
+	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any] = {}): pass
+
 	def scheduling(self, func: Callable) -> Callable:
 		def combined(*args):
 			caller(*func(args))
@@ -46,7 +54,7 @@ class Area(abcs.Area, Node, Publisher, Trigger):
 			subscriptions[area] = {'slots': subscriptions[area]}
 		
 		subscriptions[clock_name] = {'slots': clock_slot and [clock_slot], 'buffer-length': 1}
-		super().setup(puller=True, subscriptions=subscriptions)
+		self.setup(puller=True, subscriptions=subscriptions)
 	
 	def _process(self, interface: int, message: Sequence[str], source: str=None):
 		if interface == zmq.PULL:
@@ -96,13 +104,16 @@ class Area(abcs.Area, Node, Publisher, Trigger):
 	def process(self, source: str, message: Dict, slot: str=None):
 		try:
 			imprint_full(self, source, message, slot)
+			func = None
+			if None in self._processors:
+				func = self._processors[None][None]
 			if source in self._processors:
 				if slot in self._processors[source]:
-					self._alterations.add(self._processors[source][slot])
+					func = self._processors[source][slot]
 				elif None in self._processors[source]:
-					self._alterations.add(self._processors[source][None])
-			elif None in self._processors:
-				self._alterations.add(self._processors[None][None])
+					func = self._processors[source][None]
+			if func is not None:
+				self._alterations.add(func)
 			logging.debug('Subscriber Message from "%s" - "%s"', source, slot)
 		except KeyError:
 			logging.debug('Unsubscribed Message from "%s" - "%s"', source, slot)

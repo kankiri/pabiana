@@ -1,12 +1,15 @@
+import logging
+
 from pabiana import Area, repo
+from pabiana.utils import multiple
 
-from utils import utils
+from . import utils
 
-
-area = Area(repo['area-name'], host='0.0.0.0')
+area = Area(repo['area-name'], repo['interfaces'])
 premise = utils.setup
 config = {
 	'clock-name': 'clock',
+	'clock-slots': multiple(1, 6),
 	'context-values': {
 		'temperature': 18,
 		'window-open': False
@@ -16,14 +19,14 @@ config = {
 
 @area.register
 def increase_temp():
-	area.context['temperature'] += 0.5
-	area.autoloop(increase_temp)
+	area.context['temperature'] += 0.1
+	area.autoloop('increase_temp')
 
 
 @area.register
 def lower_temp():
-	area.context['temperature'] -= 0.5
-	area.autoloop(lower_temp)
+	area.context['temperature'] -= 0.1
+	area.autoloop('lower_temp')
 
 
 @area.register
@@ -37,16 +40,20 @@ def window(open):
 
 
 @area.scheduling
-def schedule():
-	if keep_temp in area._demand:
-		area._demand.pop(increase_temp, None)
-		area._demand.pop(lower_temp, None)
-	elif lower_temp in area._demand:
-		area._demand.pop(increase_temp, None)
+def schedule(demand: dict, alterations: set, looped: set=None, altered: set=None):
+	"""Prioritizes Triggers called from outside."""
+	if looped is not None and len(demand) != len(looped):
+		for func in looped: del demand[func]
+	if keep_temp in demand:
+		demand.pop(increase_temp, None)
+		demand.pop(lower_temp, None)
+	elif lower_temp in demand:
+		demand.pop(increase_temp, None)
+	return demand, alterations
 
 
 @area.pulse
-def publish():
+def routine():
 	if area.time % 8 == 0:
 		area.publish({
 			'temperature': area.context['temperature'],

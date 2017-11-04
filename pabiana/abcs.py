@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Optional, Dict, Tuple
+from typing import Any, Callable, Optional, Dict, Tuple, Set
 
 from .utils import Interfaces
 
@@ -12,7 +12,7 @@ class Node(ABC):
 	
 	Attributes:
 		name: Unique name of the Node.
-		interfaces: IP addresses and ports for every Nodes interfaces are stored here.
+		interfaces: IP addresses, ports and optionally host IPs for every Nodes interfaces are stored here.
 		time: Internal time of the Node.
 	"""
 	def __init__(self, name: str, interfaces: Interfaces):
@@ -21,7 +21,7 @@ class Node(ABC):
 		self.time = 1  # type: int
 	
 	def rslv(self, interface: str, name: str=None) -> Tuple[str, int, Optional[str]]:
-		"""Return the IP address and the port for one of this Nodes interfaces."""
+		"""Return the IP address, port and optionally host IP for one of this Nodes interfaces."""
 		if name is None:
 			name = self.name
 		key = '{}-{}'.format(name, interface)
@@ -57,7 +57,7 @@ class Area(Node):
 	def __init__(self, name: str, interfaces: Interfaces):
 		super().__init__(name, interfaces)
 		self.clock_name = None  # type: str
-		self.clock_slot = None  # type: str
+		self.clock_slots = None  # type: Set[str]
 		self.context = {}  # type: dict
 
 	@abstractmethod

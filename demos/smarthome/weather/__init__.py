@@ -1,13 +1,15 @@
 from pabiana import Area, repo
-from utils import utils
+from pabiana.utils import multiple
 
+from . import utils
 
-area = Area(repo['area-name'], host='0.0.0.0')
+area = Area(repo['area-name'], repo['interfaces'])
 premise = utils.setup
 config = {
 	'clock-name': 'clock',
+	'clock-slots': multiple(4, 6),
 	'context-values': {
-		'temperature': 5,
+		'temperature': 10,
 		'humidity': 40
 	}
 }
@@ -15,8 +17,7 @@ config = {
 
 @area.pulse
 def publish():
-	if area.time % 8 == 0:
-		area.publish({
-			'temperature': area.context['temperature'],
-			'humidity': area.context['humidity']
-		})
+	area.publish({
+		'temperature': area.context['temperature'],
+		'humidity': area.context['humidity']
+	})

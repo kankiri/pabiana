@@ -1,14 +1,14 @@
 import json
 import logging
-from typing import Any, Callable, Dict, Optional, Sequence, Set
+from typing import Any, Callable, Dict, Optional, Sequence, Set, Iterable
 
 import zmq
 
-from pabiana.parsers import init_full, imprint_full
 from .extensions import Publisher, Pusher
 from .node import Node
 from .utils import caller
 from .. import abcs
+from ..parsers import init_full, imprint_full
 from ..utils import Interfaces
 
 
@@ -24,11 +24,11 @@ class Area(Node, abcs.Area):
 
 		self._triggers = {'exit': self.stop}  # type: Dict[str, Callable]
 		self._demand = {}  # type: Dict[Callable, Dict[str, Any]]
-		self._demand_loop = {}  # type: Dict[Callable, Dict[str, Any]]
+		self._loop = {}  # type: Dict[Callable, Dict[str, Any]]
 
 		self._processors = {}  # type: Dict[Optional[str], Dict[Optional[str], Callable]]
 		self._alterations = set()  # type: Set[Callable]
-		self._alts_loop = set()  # type: Set[Callable]
+		self._altered = set()  # type: Set[Callable]
 
 		self._pulse_function = None  # type: Callable
 
@@ -37,23 +37,23 @@ class Area(Node, abcs.Area):
 
 	def publish(self, message: dict, slot: str = None): pass
 
-	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any] = {}): pass
+	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any]={}): pass
 
 	def scheduling(self, func: Callable) -> Callable:
-		def combined(*args):
-			caller(*func(args))
+		def combined(*args, **kwargs):
+			caller(*func(*args, **kwargs))
 		self._schedule_function = combined
 		return func
 	
-	def subscribe(self, clock_name: str, clock_slot: str=None, subscriptions: Dict[str, Any]={}):
-		self.clock_name = clock_name
-		self.clock_slot = clock_slot
-		
+	def subscribe(self, clock_name: str=None, clock_slots: Iterable[str]=None, subscriptions: Dict[str, Any]={}):
 		for area in subscriptions:  # type: str
 			init_full(self, area, subscriptions[area])
 			subscriptions[area] = {'slots': subscriptions[area]}
-		
-		subscriptions[clock_name] = {'slots': clock_slot and [clock_slot], 'buffer-length': 1}
+
+		if clock_name is not None:
+			self.clock_name = clock_name
+			self.clock_slots = clock_slots
+			subscriptions[clock_name] = {'slots': clock_slots, 'buffer-length': 1}
 		self.setup(puller=True, subscriptions=subscriptions)
 	
 	def _process(self, interface: int, message: Sequence[str], source: str=None):
@@ -87,7 +87,7 @@ class Area(Node, abcs.Area):
 		
 	def autoloop(self, trigger: str, parameters: Dict[str, Any]={}):
 		func = self._triggers[trigger]
-		self._demand_loop[func] = parameters
+		self._loop[func] = parameters
 	
 	# ------------- Message processing functions -------------
 	
@@ -119,7 +119,7 @@ class Area(Node, abcs.Area):
 			logging.debug('Unsubscribed Message from "%s" - "%s"', source, slot)
 		
 	def alter(self, source: str=None, slot: str=None):
-		self._alts_loop.add(self._processors[source][slot])
+		self._altered.add(self._processors[source][slot])
 	
 	# ------------- Clock processing functions -------------
 	
@@ -128,14 +128,18 @@ class Area(Node, abcs.Area):
 		return func
 	
 	def proceed(self):
-		if self._demand_loop:
-			self._demand.update(self._demand_loop)
-			self._demand_loop.clear()
-		if self._alts_loop:
-			self._alterations.update(self._alts_loop)
-			self._alts_loop.clear()
+		looped = None
+		if self._loop:
+			self._demand.update(self._loop)
+			looped = set(self._loop)
+			self._loop.clear()
+		altered = None
+		if self._altered:
+			self._alterations.update(self._altered)
+			altered = self._altered.copy()
+			self._altered.clear()
 		if self._demand or self._alterations:
-			self._schedule_function(self._demand, self._alterations)
+			self._schedule_function(self._demand, self._alterations, looped=looped, altered=altered)
 			self._demand.clear()
 			self._alterations.clear()
 		if self._pulse_function is not None:

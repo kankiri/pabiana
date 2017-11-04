@@ -19,7 +19,7 @@ def setup():
 	})
 
 
-def test_Node_init():
+def test_node_init():
 	class TestNode(Node): pass
 	TestNode.__abstractmethods__ = set()
 
@@ -29,7 +29,7 @@ def test_Node_init():
 	assert isinstance(node.time, int)
 
 
-def test_Node_rslv():
+def test_node_rslv():
 	class TestNode(Node): pass
 	TestNode.__abstractmethods__ = set()
 
@@ -46,10 +46,10 @@ def test_Node_rslv():
 	assert ip == '130.0.0.4' and port == 8285 and host is None
 
 
-def test_Area_init():
+def test_area_init():
 	class TestArea(Area): pass
 	TestArea.__abstractmethods__ = set()
 
 	area = TestArea(name='area2', interfaces=interfaces)
 	assert isinstance(area.context, dict)
-	assert hasattr(area, 'clock_name') and hasattr(area, 'clock_slot')
+	assert hasattr(area, 'clock_name') and hasattr(area, 'clock_slots')

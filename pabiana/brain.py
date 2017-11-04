@@ -7,7 +7,9 @@ from os import path
 
 import pip
 
-from . import _default_clock, load_interfaces, repo
+from . import repo
+from .templates import create_director, create_clock
+from .utils import read_interfaces, setup_logging
 
 
 def main(*args):
@@ -17,9 +19,13 @@ def main(*args):
 		stop_pip = True
 		args.remove('-X')
 	if '-C' in args:
-		args.append('clock:clock')
+		args.append('def_clock:clock')
+		args.remove('-C')
+	elif '-D' in args:
+		args.append('def_director:clock')
 		args.remove('-C')
 	if len(args) > 1:
+		setup_logging()
 		logging.info('Starting %s processes', len(args))
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
@@ -37,8 +43,7 @@ def run(module_area_name, stop_pip=False):
 	repo['area-name'] = area_name
 	
 	intf_path = path.join(repo['base-path'], 'interfaces.json')
-	if path.isfile(intf_path):
-		load_interfaces(intf_path)
+	repo['interfaces'] = read_interfaces(intf_path)
 	
 	req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
 	if not stop_pip and path.isfile(req_path):
@@ -47,8 +52,15 @@ def run(module_area_name, stop_pip=False):
 	try:
 		mod = importlib.import_module(module_name)
 	except ImportError:
-		if module_name == 'clock' and area_name == 'clock':
-			mod = _default_clock
+		setup_logging()
+		if module_name == 'def_director' and area_name == 'clock':
+			area = create_director(name=area_name, interfaces=repo['interfaces'])
+			area.run()
+			return
+		if module_name == 'def_clock' and area_name == 'clock':
+			area = create_clock(name=area_name, interfaces=repo['interfaces'])
+			area.run()
+			return
 		else:
 			raise
 	
@@ -57,29 +69,16 @@ def run(module_area_name, stop_pip=False):
 	
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):
-			params = {'clock_name': mod.config['clock-name']}
-			if 'clock-slot' in mod.config:
-				if mod.config['clock-slot'] is not None:
-					params['clock_slot'] = mod.config['clock-slot']
-			if 'subscriptions' in mod.config:
-				if mod.config['subscriptions'] is not None:
-					params['subscriptions'] = mod.config['subscriptions']
-			mod.area.setup(**params)
+			params = {
+				'clock_name': mod.config['clock-name'],
+				'clock_slots': mod.config.get('clock-slots')
+			}
+			if mod.config.get('subscriptions') is not None:
+				params['subscriptions'] = mod.config['subscriptions']
+			mod.area.subscribe(**params)
 			if 'context-values' in mod.config:
 				mod.area.context.update(mod.config['context-values'])
 		mod.area.run()
-	
-	elif hasattr(mod, 'clock'):
-		if hasattr(mod, 'config'):
-			params = {}
-			if 'timeout' in mod.config:
-				if mod.config['timeout'] is not None:
-					params['timeout'] = mod.config['timeout']
-			if 'use-template' in mod.config:
-				if mod.config['use-template'] is not None:
-					params['use_template'] = mod.config['use-template']
-			mod.clock.setup(**params)
-		mod.clock.run()
 	
 	elif hasattr(mod, 'runner'):
 		if hasattr(mod.runner, 'setup'):

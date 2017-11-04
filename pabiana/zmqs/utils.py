@@ -15,7 +15,7 @@ def decoder(rcvd: Iterable[bytes]) -> List[str]:
 	return result
 
 
-def caller(*args: Union[Dict[Callable, Dict[str, Any]], Iterable[Callable]]):
+def caller(*args: Union[Dict[Callable, Dict[str, Any]], Iterable[Callable]], **kwargs):
 	for functions in args:
 		if isinstance(functions, Dict):
 			for func in functions:

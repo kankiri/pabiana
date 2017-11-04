@@ -1,12 +1,13 @@
 from datetime import datetime
 
 from pabiana import Area, repo
+from pabiana.utils import multiple
 
 
-area = Area(repo['area-name'], host='0.0.0.0')
+area = Area(repo['area-name'], repo['interfaces'])
 config = {
 	'clock-name': 'clock',
-	'clock-slot': '##',
+	'clock-slots': multiple(2, 32),
 	'context-values': {
 		'timers': {}
 	}

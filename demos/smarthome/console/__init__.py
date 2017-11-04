@@ -1,16 +1,21 @@
 import signal
+import time
 
-from pabiana import Node, repo, trigger
+from pabiana import repo, Runner
 
-from utils import utils
+from . import utils
 
 
-class Runner(Node):
-	def run(self, timeout=None):
-		self.goon = True
+class Console(Runner):
+	def __init__(self, name, interfaces):
+		super().__init__(name, interfaces)
+		self._goon = None
+
+	def run(self):
+		self._goon = True
 		signal.signal(signal.SIGINT, self.stop)
 		try:
-			while self.goon:
+			while self._goon:
 				s = input('--> ').lower()
 				if 'quit' in s:
 					self.stop()
@@ -19,11 +24,14 @@ class Runner(Node):
 				elif 'close' in s:
 					self.publish({'signal': 'window-close'}, slot='input')
 		finally:
-			trigger('association', 'exit')
-			trigger('smarthome', 'exit')
-			trigger('weather', 'exit')
-			trigger('clock', 'exit')
+			self.trigger('association', 'exit')
+			self.trigger('smarthome', 'exit')
+			self.trigger('weather', 'exit')
+			self.trigger('clock', 'exit')
+
+	def stop(self):
+		self._goon = False
 
 
-runner = Runner(repo['area-name'], host='0.0.0.0')
+runner = Console(repo['area-name'], repo['interfaces'])
 premise = utils.setup

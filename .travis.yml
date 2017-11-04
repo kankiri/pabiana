@@ -1,12 +1,16 @@
 language: python
 python:
-  - "3.5"
-  - "3.6"
-
-install: "pip install --upgrade -r requirements.txt"
-
-script: "python setup.py test"
-
+- '3.5'
+- '3.6'
+install: pip install --upgrade -r requirements.txt
+script: python setup.py test
 branches:
   only:
   - master
+deploy:
+  provider: pypi
+  user: alexschoeberl
+  password:
+    secure: X/cRwHrheldjIbdpMcHPpKMiS9Uc9ZDzmEJeqSQcZuqkGh2Y8KcTPcfHpNfm2Go3vAi1H4HrW5kb3hMPkOvPOb8nRFPrBxojQOD34hmRqY07KxmE0QwxKGodJ3jpDk3hM71lyA0AdTRDn2pDcgt2meqyJlE5nGX5UeZtXwFCDKOS0Flj4D+GcSgQlogPmCoSfIAWKp4IjkU6QZl821CvmurkoJqxWzmBrwFsRoDdk4qRGQg7A48HrUfD30XW8raQAhfXooZWMLhG+dP4OokGaQiUuFF7z+vJAxQLSYUY3SwjYAus6hxIgSTvr4OGqozcjO9fo1pRaMtTtodFd6c860RWNVaXtfT6oAvZCvU05GvEQBZl16u96eFCEiXNSFcumvg2lu9T8W+iVPWlvqsLud0gkhPCUq/jOvyxYgL5zxas6/rxYD6m61nJXExxid/j91CawzqDtZGjrck3aJMA0yCe4X5FhoCzV3VWa1BsUQT38pp4aZW8klpj90igPtsY+fvX+eXLUpX4AyR/PrKZYt/JO7Nq4Pn8dIgikoMgedaUxOnqY24zP/Vmyx2kdVKT0SVb9I2zOGh3yFbu06zMp/GDLmuoAGAaYithT1Ia4sVW/uMnQghyJgeg9V82QJ2HBLKYreVfsAYaH4uMVjX0GLe8VTqMLbtRSebSt2UTnSc=
+  on:
+    branch: master

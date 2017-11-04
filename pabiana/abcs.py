@@ -62,22 +62,30 @@ class Area(Node):
 
 	@abstractmethod
 	def publish(self, message: dict, slot: str=None):
+		"""Publishes a message on the optionally given Slot."""
 		pass
 
 	@abstractmethod
 	def trigger(self, target: str, trigger: str, parameters: Dict[str, Any]={}):
+		"""Calls the specified Trigger of another Area with the optionally given parameters.
+
+		Args:
+			target: The name of the target Area.
+			trigger: The name of the Trigger.
+			parameters: The parameters of the function call.
+		"""
 		pass
 
 	@abstractmethod
 	def scheduling(self, func: Callable) -> Callable:
-		"""Registers this function as scheduler (only one)."""
+		"""Registers this function as scheduler (only one). Intended to be used as decorator."""
 		pass
 	
 	# ------------- Trigger processing functions -------------
 	
 	@abstractmethod
 	def register(self, func: Callable) -> Callable:
-		"""Registers the function as remote Trigger."""
+		"""Registers the function as remote Trigger. Intended to be used as decorator."""
 		pass
 	
 	@abstractmethod
@@ -115,7 +123,8 @@ class Area(Node):
 	@abstractmethod
 	def alteration(self, func: Callable=None, source: str=None, slot: str=None) -> Callable:
 		"""Registers the function to be called in the next round after a optionally specified Subscriber message has arrived.
-		
+
+		Intended to be used as decorator.
 		Only one function can be registered for a certain source/slot combination.
 
 		Args:
@@ -157,7 +166,7 @@ class Area(Node):
 	
 	@abstractmethod
 	def pulse(self, func: Callable) -> Callable:
-		"""Registers the function to be called at the end of every round (only one)."""
+		"""Registers the function to be called at the end of every round (only one). Intended to be used as decorator."""
 		pass
 	
 	@abstractmethod

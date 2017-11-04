@@ -48,7 +48,7 @@ class Node(abcs.Node):
 	def add(self, publisher: str, slots: Iterable[str]=None, buffer_length=None):
 		subscriber = self._zmq.socket(zmq.SUB)  # type: Socket
 		# if buffer_length is not None:
-		#	subscriber.set_hwm(buffer_length)
+		# 	subscriber.set_hwm(buffer_length)
 		ip, port, host = self.rslv(name=publisher, interface='pub')
 		subscriber.connect('tcp://{}:{}'.format(ip, port))
 		if slots is None:

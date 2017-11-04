@@ -46,6 +46,13 @@ class Area(Node, abcs.Area):
 		return func
 	
 	def subscribe(self, clock_name: str=None, clock_slots: Iterable[str]=None, subscriptions: Dict[str, Any]={}):
+		"""Subscribes this Area to the given Areas and optionally given Slots. Must be called before the Area is run.
+
+		Args:
+			clock_name: The name of the Area that is used as synchronizing Clock.
+			clock_slots: The slots of the Clock relevant to this Area.
+			subscriptions: A dictionary containing the relevant Areas names as keys and optionally the Slots as values.
+		"""
 		for area in subscriptions:  # type: str
 			init_full(self, area, subscriptions[area])
 			subscriptions[area] = {'slots': subscriptions[area]}

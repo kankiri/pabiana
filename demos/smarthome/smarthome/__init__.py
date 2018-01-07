@@ -1,5 +1,3 @@
-import logging
-
 from pabiana import Area, repo
 from pabiana.utils import multiple
 

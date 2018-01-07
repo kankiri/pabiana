@@ -70,7 +70,7 @@ def run(module_area_name, stop_pip=False):
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):
 			params = {
-				'clock_name': mod.config.get('clock-slots'),
+				'clock_name': mod.config.get('clock-name'),
 				'clock_slots': mod.config.get('clock-slots')
 			}
 			if mod.config.get('subscriptions') is not None:

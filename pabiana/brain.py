@@ -9,10 +9,31 @@ import pip
 
 from . import repo
 from .templates import create_director, create_clock
-from .utils import read_interfaces, setup_logging
+from .utils import read_interfaces
+
+
+def setup_logging():
+	logging.basicConfig(
+		format='%(asctime)s %(levelname)s %(message)s',
+		datefmt='%Y-%m-%d %H:%M:%S',
+		level=logging.INFO
+	)
+
+
+def resolve(*args):
+	result = []
+	for module_area_name in args:
+		module_name, area_name = module_area_name.split(':')
+		base_path = os.getcwd()
+		intf_path = path.join(repo['base-path'], 'interfaces.json')
+		req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
+		result.append([module_name, area_name, base_path, intf_path, req_path])
+	return result
 
 
 def main(*args):
+	setup_logging()
+	
 	args = list(args)
 	stop_pip = False
 	if '-X' in args:
@@ -24,30 +45,35 @@ def main(*args):
 	elif '-D' in args:
 		args.append('def_director:clock')
 		args.remove('-C')
-	if len(args) > 1:
-		setup_logging()
-		logging.info('Starting %s processes', len(args))
+	
+	areas = resolve(args)
+	
+	for i in range(len(areas)):
+		module_name, area_name, base_path, intf_path, req_path = areas[i]
+		areas[i][3] = read_interfaces(intf_path)
+		if not stop_pip and path.isfile(req_path):
+			pip.main(['install', '-U', '-r', req_path])
+	
+	if len(areas) > 1:
+		pids = []
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
-		for module_area_name in args:
-			process = mp.Process(target=run, args=(module_area_name, stop_pip))
+		for area in areas:
+			module_name, area_name, base_path, interfaces, req_path = area
+			process = mp.Process(target=run, args=(module_name, area_name, interfaces, base_path))
 			process.start()
+			pids.append(process.pid)
+		logging.info('Spawned processes: %s', pids)
 	else:
-		run(*args, stop_pip=stop_pip)
+		module_name, area_name, base_path, interfaces, req_path = areas[0]
+		run(module_name, area_name, interfaces, base_path)
 
 
-def run(module_area_name, stop_pip=False):
-	module_name, area_name = module_area_name.split(':')
-	repo['base-path'] = os.getcwd()
+def run(module_name, area_name, interfaces, base_path):
 	repo['module-name'] = module_name
 	repo['area-name'] = area_name
-	
-	intf_path = path.join(repo['base-path'], 'interfaces.json')
-	repo['interfaces'] = read_interfaces(intf_path)
-	
-	req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
-	if not stop_pip and path.isfile(req_path):
-		pip.main(['install', '--upgrade', '-r', req_path])
+	repo['interfaces'] = interfaces
+	repo['base-path'] = base_path
 	
 	try:
 		mod = importlib.import_module(module_name)

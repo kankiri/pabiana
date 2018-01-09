@@ -25,8 +25,8 @@ def resolve(args):
 	for module_area_name in args:
 		module_name, area_name = module_area_name.split(':')
 		base_path = os.getcwd()
-		intf_path = path.join(repo['base-path'], 'interfaces.json')
-		req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
+		intf_path = path.join(base_path, 'interfaces.json')
+		req_path = path.join(base_path, module_name, 'requirements.txt')
 		result.append([module_name, area_name, base_path, intf_path, req_path])
 	return result
 

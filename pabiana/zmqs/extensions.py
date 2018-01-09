@@ -21,7 +21,7 @@ class Publisher:
 			self._publisher.bind('tcp://{}:{}'.format(host or ip, port))
 		message = json.dumps(message)
 		self._publisher.send_multipart([(slot or '').encode('utf-8'), message.encode('utf-8')])
-		logging.debug('Message published at "%s"', slot)
+		logging.debug('Message published at %s', slot)
 
 
 class Pusher:
@@ -36,4 +36,4 @@ class Pusher:
 		parameters['trigger'] = trigger
 		pusher.send_json(parameters)
 		pusher.close()
-		logging.debug('Trigger "%s" of "%s" called', trigger, target)
+		logging.debug('Trigger %s of %s called', trigger, target)

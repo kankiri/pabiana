@@ -20,7 +20,7 @@ def setup_logging():
 	)
 
 
-def resolve(*args):
+def resolve(args):
 	result = []
 	for module_area_name in args:
 		module_name, area_name = module_area_name.split(':')

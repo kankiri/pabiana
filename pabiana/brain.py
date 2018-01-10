@@ -12,12 +12,7 @@ from .templates import create_director, create_clock
 from .utils import read_interfaces
 
 
-def setup_logging():
-	logging.basicConfig(
-		format='%(asctime)s %(levelname)s %(message)s',
-		datefmt='%Y-%m-%d %H:%M:%S',
-		level=logging.INFO
-	)
+logger = logging.getLogger(__name__)
 
 
 def resolve(args):
@@ -32,8 +27,6 @@ def resolve(args):
 
 
 def main(*args):
-	setup_logging()
-	
 	args = list(args)
 	stop_pip = False
 	if '-X' in args:
@@ -63,7 +56,7 @@ def main(*args):
 			process = mp.Process(target=run, args=(module_name, area_name, interfaces, base_path))
 			process.start()
 			pids.append(process.pid)
-		logging.info('Spawned processes: %s', pids)
+		logger.info('Spawned processes: %s', pids)
 	else:
 		module_name, area_name, base_path, interfaces, req_path = areas[0]
 		run(module_name, area_name, interfaces, base_path)
@@ -78,7 +71,6 @@ def run(module_name, area_name, interfaces, base_path):
 	try:
 		mod = importlib.import_module(module_name)
 	except ImportError:
-		setup_logging()
 		if module_name == 'def_director' and area_name == 'clock':
 			area = create_director(name=area_name, interfaces=repo['interfaces'])
 			area.run()

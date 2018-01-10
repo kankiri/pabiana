@@ -8,6 +8,9 @@ from ..abcs import Node
 from .utils import Socket, Context
 
 
+logger = logging.getLogger(__name__)
+
+
 class Publisher:
 	def __init__(self, node: Node, context: Context):
 		self._node = node  # type: Node
@@ -21,7 +24,7 @@ class Publisher:
 			self._publisher.bind('tcp://{}:{}'.format(host or ip, port))
 		message = json.dumps(message)
 		self._publisher.send_multipart([(slot or '').encode('utf-8'), message.encode('utf-8')])
-		logging.debug('Message published at %s', slot)
+		logger.debug('Message published at "%s"', slot)
 
 
 class Pusher:
@@ -36,4 +39,4 @@ class Pusher:
 		parameters['trigger'] = trigger
 		pusher.send_json(parameters)
 		pusher.close()
-		logging.debug('Trigger %s of %s called', trigger, target)
+		logger.debug('Trigger "%s" of "%s" called', trigger, target)

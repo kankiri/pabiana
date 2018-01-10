@@ -12,6 +12,9 @@ from ..parsers import init_full, imprint_full
 from ..utils import Interfaces
 
 
+logger = logging.getLogger(__name__)
+
+
 class Area(Node, abcs.Area):
 	"""Class that implements the Pabiana Area interface based on the ZMQ Node class.
 
@@ -71,7 +74,7 @@ class Area(Node, abcs.Area):
 			self.comply(trigger_name, message)
 		else:
 			if source == self.clock_name:
-				logging.log(5, 'Tick')
+				logger.log(5, 'Tick')
 				self.proceed()
 			else:
 				slot = message[0]
@@ -86,11 +89,11 @@ class Area(Node, abcs.Area):
 	
 	def comply(self, trigger: str, parameters: Dict[str, Any]={}):
 		try:
-			logging.debug('Trigger call: "%s"', trigger)
+			logger.debug('Trigger call: "%s"', trigger)
 			func = self._triggers[trigger]
 			self._demand[func] = parameters
 		except KeyError:
-			logging.warning('Unavailable Trigger called')
+			logger.warning('Unavailable Trigger called')
 		
 	def autoloop(self, trigger: str, parameters: Dict[str, Any]={}):
 		func = self._triggers[trigger]
@@ -121,9 +124,9 @@ class Area(Node, abcs.Area):
 					func = self._processors[source][None]
 			if func is not None:
 				self._alterations.add(func)
-			logging.debug('Subscriber Message from "%s" - "%s"', source, slot)
+			logger.debug('Subscriber Message from "%s" - "%s"', source, slot)
 		except KeyError:
-			logging.debug('Unsubscribed Message from "%s" - "%s"', source, slot)
+			logger.debug('Unsubscribed Message from "%s" - "%s"', source, slot)
 		
 	def alter(self, source: str=None, slot: str=None):
 		self._altered.add(self._processors[source][slot])

@@ -10,6 +10,9 @@ from .. import abcs
 from ..utils import Interfaces
 
 
+logger = logging.getLogger(__name__)
+
+
 class Node(abcs.Node):
 	"""Abstract class that implements the Pabiana Node interface based on the ZMQ library.
 
@@ -40,7 +43,7 @@ class Node(abcs.Node):
 		if subscriptions:
 			for publisher in subscriptions:  # type: str
 				self.add(publisher, subscriptions[publisher].get('slots'), subscriptions[publisher].get('buffer-length'))
-			logging.info('Listening to %s', {
+			logger.info('Listening to %s', {
 				k: (1 if subscriptions[k].get('slots') is None else len(subscriptions[k].get('slots')))
 				for k in subscriptions
 			})
@@ -73,8 +76,8 @@ class Node(abcs.Node):
 					self.routine()
 		finally:
 			self._zmq.destroy(linger=linger)
-			logging.debug('Context destroyed')
-			logging.shutdown()
+			logger.debug('Context destroyed')
+			logger.shutdown()
 
 	@abstractmethod
 	def _process(self, interface: int, message: Sequence[str], source: str = None):

@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Dict, Set, Union
 
 Interfaces = Dict[str, Dict[str, Union[str, int]]]

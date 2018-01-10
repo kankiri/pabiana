@@ -165,8 +165,21 @@ class Area(Node):
 	# ------------- Clock processing functions -------------
 	
 	@abstractmethod
+	def activity(self, func: Callable) -> Callable:
+		"""Registers the function to be called if there occurred input during this round.
+		
+		Only one function can be set.
+		This method is intended to be used as a decorator.
+		"""
+		pass
+	
+	@abstractmethod
 	def pulse(self, func: Callable) -> Callable:
-		"""Registers the function to be called at the end of every round (only one). Intended to be used as decorator."""
+		"""Registers the function to be called at the end of every round.
+		
+		Only one function can be set.
+		This method is intended to be used as a decorator.
+		"""
 		pass
 	
 	@abstractmethod

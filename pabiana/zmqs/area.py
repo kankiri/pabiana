@@ -32,7 +32,8 @@ class Area(Node, abcs.Area):
 		self._processors = {}  # type: Dict[Optional[str], Dict[Optional[str], Callable]]
 		self._alterations = set()  # type: Set[Callable]
 		self._altered = set()  # type: Set[Callable]
-
+		
+		self._active_function = None  # type: Callable
 		self._pulse_function = None  # type: Callable
 
 		self.publish = Publisher(self, self._zmq).publish
@@ -133,6 +134,10 @@ class Area(Node, abcs.Area):
 	
 	# ------------- Clock processing functions -------------
 	
+	def activity(self, func: Callable) -> Callable:
+		self._active_function = func
+		return func
+	
 	def pulse(self, func: Callable) -> Callable:
 		self._pulse_function = func
 		return func
@@ -150,6 +155,8 @@ class Area(Node, abcs.Area):
 			self._altered.clear()
 		if self._demand or self._alterations:
 			self._schedule_function(self._demand, self._alterations, looped=looped, altered=altered)
+			if self._active_function is not None:
+				self._active_function()
 			self._demand.clear()
 			self._alterations.clear()
 		if self._pulse_function is not None:

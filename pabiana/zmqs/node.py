@@ -77,7 +77,7 @@ class Node(abcs.Node):
 		finally:
 			self._zmq.destroy(linger=linger)
 			logger.debug('Context destroyed')
-			logger.shutdown()
+			logging.shutdown()
 
 	@abstractmethod
 	def _process(self, interface: int, message: Sequence[str], source: str = None):

@@ -1,5 +1,4 @@
 import importlib
-import logging
 import multiprocessing as mp
 import os
 import signal
@@ -10,9 +9,6 @@ import pip
 from . import repo
 from .templates import create_director, create_clock
 from .utils import read_interfaces
-
-
-logger = logging.getLogger(__name__)
 
 
 def resolve(args):
@@ -56,7 +52,7 @@ def main(*args):
 			process = mp.Process(target=run, args=(module_name, area_name, interfaces, base_path))
 			process.start()
 			pids.append(process.pid)
-		logger.info('Spawned processes: %s', pids)
+		print('Spawned processes: {}'.format(pids))
 	else:
 		module_name, area_name, base_path, interfaces, req_path = areas[0]
 		run(module_name, area_name, interfaces, base_path)

@@ -16,9 +16,10 @@ def resolve(args):
 	for module_area_name in args:
 		module_name, area_name = module_area_name.split(':')
 		base_path = os.getcwd()
-		intf_path = path.join(base_path, 'interfaces.json')
-		req_path = path.join(base_path, module_name, 'requirements.txt')
-		result.append([module_name, area_name, base_path, intf_path, req_path])
+		module_path = path.join(base_path, module_name)
+		interfaces_path = path.join(base_path, 'interfaces.json')
+		requirements_path = path.join(base_path, module_name, 'requirements.txt')
+		result.append([module_name, area_name, base_path, interfaces_path, requirements_path, module_path])
 	return result
 
 
@@ -38,31 +39,32 @@ def main(*args):
 	areas = resolve(args)
 	
 	for i in range(len(areas)):
-		module_name, area_name, base_path, intf_path, req_path = areas[i]
-		areas[i][3] = read_interfaces(intf_path)
-		if not stop_pip and path.isfile(req_path):
-			pip.main(['install', '-U', '-r', req_path])
+		module_name, area_name, base_path, interfaces_path, requirements_path, module_path = areas[i]
+		areas[i][3] = read_interfaces(interfaces_path)
+		if not stop_pip and path.isfile(requirements_path):
+			pip.main(['install', '-U', '-r', requirements_path])
 	
 	if len(areas) > 1:
 		pids = []
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
 		for area in areas:
-			module_name, area_name, base_path, interfaces, req_path = area
-			process = mp.Process(target=run, args=(module_name, area_name, interfaces, base_path))
+			module_name, area_name, base_path, interfaces, requirements_path, module_path = area
+			process = mp.Process(target=run, args=(module_name, area_name, interfaces, base_path, module_path))
 			process.start()
 			pids.append(process.pid)
 		print('Spawned processes: {}'.format(pids))
 	else:
-		module_name, area_name, base_path, interfaces, req_path = areas[0]
-		run(module_name, area_name, interfaces, base_path)
+		module_name, area_name, base_path, interfaces, requirements_path, module_path = areas[0]
+		run(module_name, area_name, interfaces, base_path, module_path)
 
 
-def run(module_name, area_name, interfaces, base_path):
+def run(module_name, area_name, interfaces, base_path, module_path):
 	repo['module-name'] = module_name
 	repo['area-name'] = area_name
 	repo['interfaces'] = interfaces
 	repo['base-path'] = base_path
+	repo['module-path'] = module_path
 	
 	try:
 		mod = importlib.import_module(module_name)

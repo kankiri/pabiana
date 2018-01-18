@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import Dict, Set, Union
 
 Interfaces = Dict[str, Dict[str, Union[str, int]]]
@@ -25,11 +24,3 @@ def multiple(layer: int, limit: int) -> Set[str]:
 		limit: The number of layers of the hierarchy.
 	"""
 	return {str(x).zfill(2) for x in [2**x for x in range(limit)] if x % 2**(layer - 1) == 0}
-
-
-def setup_logging():
-	logging.basicConfig(
-		format='%(asctime)s %(levelname)s %(message)s',
-		datefmt='%Y-%m-%d %H:%M:%S',
-		level=5
-	)

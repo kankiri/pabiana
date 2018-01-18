@@ -5,7 +5,7 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
 	name='Pabiana',
-	version='0.1.2',
+	version='0.1.3',
 	packages=find_packages(),
 	install_requires=['pip>=9.0.1', 'pyzmq>=16.0.2'],
 	setup_requires=['pytest-runner>=2.12.1'],
@@ -16,7 +16,7 @@ setup(
 	author='Alexander Schöberl',
 	author_email='alexander.schoeberl@gmail.com',
 	description='A minimalistic framework to build distributed cognitive applications based on ØMQ',
-	long_description=open(path.join(here, 'README.md')).read(),
+	long_description=open(path.join(here, 'DESCR.rst')).read(),
 	keywords=['framework', 'cognitive', 'distributed', 'ØMQ'],
 	license='MIT'
 )

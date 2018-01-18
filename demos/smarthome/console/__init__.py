@@ -1,5 +1,4 @@
 import signal
-import time
 
 from pabiana import repo, Runner
 

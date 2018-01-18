@@ -12,6 +12,9 @@ from ..parsers import init_full, imprint_full
 from ..utils import Interfaces
 
 
+logger = logging.getLogger(__name__)
+
+
 class Area(Node, abcs.Area):
 	"""Class that implements the Pabiana Area interface based on the ZMQ Node class.
 
@@ -29,7 +32,8 @@ class Area(Node, abcs.Area):
 		self._processors = {}  # type: Dict[Optional[str], Dict[Optional[str], Callable]]
 		self._alterations = set()  # type: Set[Callable]
 		self._altered = set()  # type: Set[Callable]
-
+		
+		self._active_function = None  # type: Callable
 		self._pulse_function = None  # type: Callable
 
 		self.publish = Publisher(self, self._zmq).publish
@@ -71,7 +75,7 @@ class Area(Node, abcs.Area):
 			self.comply(trigger_name, message)
 		else:
 			if source == self.clock_name:
-				logging.log(5, 'Tick')
+				logger.log(5, 'Tick')
 				self.proceed()
 			else:
 				slot = message[0]
@@ -86,11 +90,11 @@ class Area(Node, abcs.Area):
 	
 	def comply(self, trigger: str, parameters: Dict[str, Any]={}):
 		try:
-			logging.debug('Trigger call: "%s"', trigger)
+			logger.debug('Trigger call: "%s"', trigger)
 			func = self._triggers[trigger]
 			self._demand[func] = parameters
 		except KeyError:
-			logging.warning('Unavailable Trigger called')
+			logger.warning('Unavailable Trigger called')
 		
 	def autoloop(self, trigger: str, parameters: Dict[str, Any]={}):
 		func = self._triggers[trigger]
@@ -121,14 +125,18 @@ class Area(Node, abcs.Area):
 					func = self._processors[source][None]
 			if func is not None:
 				self._alterations.add(func)
-			logging.debug('Subscriber Message from "%s" - "%s"', source, slot)
+			logger.debug('Subscriber Message from "%s" - "%s"', source, slot)
 		except KeyError:
-			logging.debug('Unsubscribed Message from "%s" - "%s"', source, slot)
+			logger.debug('Unsubscribed Message from "%s" - "%s"', source, slot)
 		
 	def alter(self, source: str=None, slot: str=None):
 		self._altered.add(self._processors[source][slot])
 	
 	# ------------- Clock processing functions -------------
+	
+	def activity(self, func: Callable) -> Callable:
+		self._active_function = func
+		return func
 	
 	def pulse(self, func: Callable) -> Callable:
 		self._pulse_function = func
@@ -147,6 +155,8 @@ class Area(Node, abcs.Area):
 			self._altered.clear()
 		if self._demand or self._alterations:
 			self._schedule_function(self._demand, self._alterations, looped=looped, altered=altered)
+			if self._active_function is not None:
+				self._active_function()
 			self._demand.clear()
 			self._alterations.clear()
 		if self._pulse_function is not None:

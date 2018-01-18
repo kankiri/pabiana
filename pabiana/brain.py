@@ -1,5 +1,4 @@
 import importlib
-import logging
 import multiprocessing as mp
 import os
 import signal
@@ -9,7 +8,19 @@ import pip
 
 from . import repo
 from .templates import create_director, create_clock
-from .utils import read_interfaces, setup_logging
+from .utils import read_interfaces
+
+
+def resolve(args):
+	result = []
+	for module_area_name in args:
+		module_name, area_name = module_area_name.split(':')
+		base_path = os.getcwd()
+		module_path = path.join(base_path, module_name)
+		interfaces_path = path.join(base_path, 'interfaces.json')
+		requirements_path = path.join(base_path, module_name, 'requirements.txt')
+		result.append([module_name, area_name, base_path, interfaces_path, requirements_path, module_path])
+	return result
 
 
 def main(*args):
@@ -24,35 +35,40 @@ def main(*args):
 	elif '-D' in args:
 		args.append('def_director:clock')
 		args.remove('-C')
-	if len(args) > 1:
-		setup_logging()
-		logging.info('Starting %s processes', len(args))
+	
+	areas = resolve(args)
+	
+	for i in range(len(areas)):
+		module_name, area_name, base_path, interfaces_path, requirements_path, module_path = areas[i]
+		areas[i][3] = read_interfaces(interfaces_path)
+		if not stop_pip and path.isfile(requirements_path):
+			pip.main(['install', '-U', '-r', requirements_path])
+	
+	if len(areas) > 1:
+		pids = []
 		signal.signal(signal.SIGINT, lambda *args, **kwargs: None)
 		mp.set_start_method('spawn')
-		for module_area_name in args:
-			process = mp.Process(target=run, args=(module_area_name, stop_pip))
+		for area in areas:
+			module_name, area_name, base_path, interfaces, requirements_path, module_path = area
+			process = mp.Process(target=run, args=(module_name, area_name, interfaces, base_path, module_path))
 			process.start()
+			pids.append(process.pid)
+		print('Spawned processes: {}'.format(pids))
 	else:
-		run(*args, stop_pip=stop_pip)
+		module_name, area_name, base_path, interfaces, requirements_path, module_path = areas[0]
+		run(module_name, area_name, interfaces, base_path, module_path)
 
 
-def run(module_area_name, stop_pip=False):
-	module_name, area_name = module_area_name.split(':')
-	repo['base-path'] = os.getcwd()
+def run(module_name, area_name, interfaces, base_path, module_path):
 	repo['module-name'] = module_name
 	repo['area-name'] = area_name
-	
-	intf_path = path.join(repo['base-path'], 'interfaces.json')
-	repo['interfaces'] = read_interfaces(intf_path)
-	
-	req_path = path.join(repo['base-path'], module_name, 'requirements.txt')
-	if not stop_pip and path.isfile(req_path):
-		pip.main(['install', '--upgrade', '-r', req_path])
+	repo['interfaces'] = interfaces
+	repo['base-path'] = base_path
+	repo['module-path'] = module_path
 	
 	try:
 		mod = importlib.import_module(module_name)
 	except ImportError:
-		setup_logging()
 		if module_name == 'def_director' and area_name == 'clock':
 			area = create_director(name=area_name, interfaces=repo['interfaces'])
 			area.run()
@@ -70,7 +86,7 @@ def run(module_area_name, stop_pip=False):
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):
 			params = {
-				'clock_name': mod.config['clock-name'],
+				'clock_name': mod.config.get('clock-name'),
 				'clock_slots': mod.config.get('clock-slots')
 			}
 			if mod.config.get('subscriptions') is not None:
@@ -87,4 +103,3 @@ def run(module_area_name, stop_pip=False):
 				params.update(mod.config)
 			mod.runner.setup(**params)
 		mod.runner.run()
-

@@ -1,5 +1,4 @@
 This program is used to demonstrate the convenient way to write and run software using the Pabiana framework.
-It works the same way as the program found in the *smarthome* folder, but needs less code.
 
 ## Installation
 
@@ -23,5 +22,7 @@ You can also start more than one Area with a single command.
 
     python3 -m pabiana weather:weather smarthome:smarthome
 
+Besides *weather* and *smarthome*, there are also the *association* and *console* Areas.
 Make sure to start at least the optional *console* Area with it's own command, because it waits for user input.
-
+For the application to work properly, you also have to start a Clock.
+Append *-C* to one of the commands, to do so.

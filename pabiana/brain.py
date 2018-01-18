@@ -103,4 +103,3 @@ def run(module_name, area_name, interfaces, base_path, module_path):
 				params.update(mod.config)
 			mod.runner.setup(**params)
 		mod.runner.run()
-

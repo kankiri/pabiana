@@ -16,7 +16,7 @@ setup(
 	author='Alexander Schöberl',
 	author_email='alexander.schoeberl@gmail.com',
 	description='A minimalistic framework to build distributed cognitive applications based on ØMQ',
-	long_description=open(path.join(here, 'README.md')).read(),
+	long_description=open(path.join(here, 'DESCR.rst')).read(),
 	keywords=['framework', 'cognitive', 'distributed', 'ØMQ'],
 	license='MIT'
 )

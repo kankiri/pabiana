@@ -4,7 +4,7 @@ import os
 import signal
 from os import path
 
-import pip
+from pip._internal import main
 
 from . import repo
 from .templates import create_director, create_clock
@@ -42,7 +42,7 @@ def main(*args):
 		module_name, area_name, base_path, interfaces_path, requirements_path, module_path = areas[i]
 		areas[i][3] = read_interfaces(interfaces_path)
 		if not stop_pip and path.isfile(requirements_path):
-			pip.main(['install', '-U', '-r', requirements_path])
+			main(['install', '-U', '-r', requirements_path])
 	
 	if len(areas) > 1:
 		pids = []

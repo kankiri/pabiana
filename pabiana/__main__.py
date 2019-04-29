@@ -40,7 +40,7 @@ def run(module_name, area_name, base_path, module_path, interfaces_path):
 	except ImportError:
 		if module_name == 'def_clock' and area_name == 'clock':
 			area = create_clock(name=area_name, interfaces=repo['interfaces'])
-			area.run()
+			area.run(timeout=500)
 			return
 		else:
 			raise

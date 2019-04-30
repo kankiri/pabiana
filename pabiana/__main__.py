@@ -54,7 +54,7 @@ def run(module_name, area_name, base_path, module_path, interfaces_path):
 				'clock_name': mod.config.get('clock-name'),
 				'clock_slots': mod.config.get('clock-slots')
 			}
-			if mod.config.get('subscriptions') is not None:
+			if 'subscriptions' in mod.config:
 				params['subscriptions'] = mod.config['subscriptions']
 			mod.area.subscribe(**params)
 			if 'context-values' in mod.config:

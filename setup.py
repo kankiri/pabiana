@@ -5,7 +5,7 @@ here = path.abspath(path.dirname(__file__))
 
 setup(
 	name='Pabiana',
-	version='0.1.4',
+	version=open(path.join(here, 'VERSION.txt')).read(),
 	packages=find_packages(),
 	install_requires=['pip>=9.0.1', 'pyzmq>=16.0.2'],
 	setup_requires=['pytest-runner>=2.12.1'],

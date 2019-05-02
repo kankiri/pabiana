@@ -8,7 +8,7 @@ from .extensions import Publisher, Pusher
 from .node import Node
 from .utils import caller
 from .. import abcs
-from ..parsers import init_full, imprint_full
+from ..parsers import init_full, imprint_full, reference_full
 from ..utils import Interfaces
 
 
@@ -30,8 +30,8 @@ class Area(Node, abcs.Area):
 		self._loop = {}  # type: Dict[Callable, Dict[str, Any]]
 
 		self._processors = {}  # type: Dict[Optional[str], Dict[Optional[str], Callable]]
-		self._alterations = set()  # type: Set[Callable]
-		self._altered = set()  # type: Set[Callable]
+		self._alterations = {}  # type: Dict[Callable, Dict[str, Any]]
+		self._altered = {}  # type: Dict[Callable, Dict[str, Any]]
 		
 		self._active_function = None  # type: Callable
 		self._pulse_function = None  # type: Callable
@@ -114,23 +114,20 @@ class Area(Node, abcs.Area):
 	
 	def process(self, source: str, message: Dict, slot: str=None):
 		try:
-			imprint_full(self, source, message, slot)
-			func = None
+			parameters = imprint_full(self, source, message, slot)
 			if None in self._processors:
-				func = self._processors[None][None]
+				self._alterations[self._processors[None][None]] = parameters
 			if source in self._processors:
 				if slot in self._processors[source]:
-					func = self._processors[source][slot]
+					self._alterations[self._processors[source][slot]] = parameters
 				elif None in self._processors[source]:
-					func = self._processors[source][None]
-			if func is not None:
-				self._alterations.add(func)
+					self._alterations[self._processors[source][None]] = parameters
 			logger.debug('Subscriber Message from "%s" - "%s"', source, slot)
 		except KeyError:
-			logger.debug('Unsubscribed Message from "%s" - "%s"', source, slot)
+			logger.info('Unsubscribed Message from "%s" - "%s"', source, slot)
 		
 	def alter(self, source: str=None, slot: str=None):
-		self._altered.add(self._processors[source][slot])
+		self._altered[self._processors[source][slot]] = reference_full(self, source, slot)
 	
 	# ------------- Clock processing functions -------------
 	

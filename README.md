@@ -8,11 +8,11 @@ To be controllable from software each of these interfaces has to be represented 
 This demands for a particularly *modular software design* to be maintainable.
 Also, physical distances in larger smart homes call for a *distributed control system*.
 
-Processing and integrating sensor input from various sources and of various types and controlling multiple devices based on the results, including feedback loops, can very fast get very complicated.
+Processing and integrating sensor input from various sources and of various types and controlling multiple devices based on the results, including feedback loops, can quickly get very complicated.
 A *hierarchical data processing model* can limit the complexity to a manageable degree.
 A hierarchical system control model on the other hand can enable steady monitoring and supervision of multiple semi-autonomous systems.
 
-*Pabiana* is a minimalistic Python framework that lets you build software complying with these principles.
+**Pabiana** is a minimalistic Python framework that lets you build software complying with these principles.
 Applications consist of a number of submodules running in parallel, distributed over several nodes.
 These modules are, however, closely interconnected.
 Constant streams of messages are passed between them as a means of communication.
@@ -44,16 +44,16 @@ They integrate information from different communication media, as well as over t
 These modules are responsible for representing reality and keeping track of it's state.
 For a home automation system, in this layer you might create a separate module for every important real-world device.
 
-Modules on top monitor actions and states of lower modules and intervene where necessary.
+Top layer modules monitor actions and states of lower ones and intervene where necessary.
 They implement complex logic to orchestrate the interaction between devices.
 
 ## Usage
 
-Processes that run Pabiana modules are called *areas*. Each area can publish messages, subscribe to messages, trigger procedures of other areas and receive triggers. To start an area you have to use the following command:
+Processes that run Pabiana modules are called *areas*. Each area can publish messages, subscribe to messages, trigger procedures of other areas and receive trigger calls. To start an area you have to use the following command:
 
     python -m pabiana module_name:area_name
 
-For this command to work, you have to provide a JSON file called `interfaces.json` in the working directory specifying the IP address and port for both networking interfaces of all the areas of your application.
+For this command to work, you have to provide a JSON file called `interfaces.json` in the working directory specifying the addresses for both networking interfaces of all the areas of your application.
 The structure of this file is as follows:
 
     {
@@ -63,7 +63,7 @@ The structure of this file is as follows:
         "area2-rcv": {"ip": "127.0.0.1", "port": 10004, "host": "0.0.0.0"}
     }
 
-In the current working directory there also has to be a folder with the module name containing a Python file called `__init__.py` (a Python module).
+In the current working directory there also has to be a folder called like the module and containing a Python file called `__init__.py` (a Python module).
 In this file you will define the functionality of the area.
 
     from pabiana import Area, repo
@@ -78,13 +78,13 @@ In this file you will define the functionality of the area.
         print(recent)
 
     @area.register
-    def procedure(parameter1, parameter2):
+    def procedure(parameter):
         area.publish({'foo': 'bar'}, slot='important')
 
 This code creates an area that will listen to messages from `area2` on two slots.
-If it receives messages from `area1` it will print them.
+If it receives messages from `area2` it will print them.
 It's important to note that messages are queued for some time before they are processed together.
-A procedure is created that can be called from other areas.
+A procedure is defined to be called from other areas.
 Return values for procedures are ignored.
 It is recommended to create a separate file for message handlers and procedures.
 

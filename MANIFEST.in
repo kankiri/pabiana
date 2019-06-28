@@ -1,4 +1,4 @@
-include VERSION
+include VERSION.txt
 include README.md
 include LICENSE.txt
 include setup.cfg

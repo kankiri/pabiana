@@ -36,7 +36,7 @@ class Area(Node, abcs.Area):
 		self._active_function = None  # type: Callable
 		self._pulse_function = None  # type: Callable
 
-		self.publish = Publisher(self._zmq, *self.rslv('pub')).publish
+		self.publish = Publisher(*self.rslv('pub'), self._zmq).publish
 		self.trigger = Pusher(self, self._zmq).trigger
 
 	def publish(self, message: dict, slot: str = None): pass

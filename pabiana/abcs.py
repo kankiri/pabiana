@@ -25,9 +25,7 @@ class Node(ABC):
 		if name is None:
 			name = self.name
 		key = '{}-{}'.format(name, interface)
-		host = None
-		if 'host' in self.interfaces[key]:
-			host = self.interfaces[key]['host']
+		host = self.interfaces[key].get('host', None)
 		return self.interfaces[key]['ip'], self.interfaces[key]['port'], host
 	
 	@abstractmethod

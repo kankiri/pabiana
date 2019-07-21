@@ -12,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class Publisher:
-	def __init__(self, context: Context, ip: str, port: int, host: str=None):
-		self._zmq = context  # type: Context
+	def __init__(self, ip: str, port: int, host: str=None, context: Context=None):
+		self._zmq = context or zmq.Context.instance()  # type: Context
 		self.ip = ip  # type: str
 		self.port = port  # type: int
 		self.host = host  # type: Optional[str]

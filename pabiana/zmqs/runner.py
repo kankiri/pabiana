@@ -13,7 +13,7 @@ class Runner(Node):
 	def __init__(self, name: str, interfaces: Interfaces):
 		super().__init__(name, interfaces)
 		self._zmq = zmq.Context.instance()  # type: Context
-		self.publish = Publisher(self, self._zmq).publish
+		self.publish = Publisher(*self.rslv('pub'), self._zmq).publish
 		self.trigger = Pusher(self, self._zmq).trigger
 
 	def publish(self, message: dict, slot: str = None): pass

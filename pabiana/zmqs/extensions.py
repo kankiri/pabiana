@@ -12,16 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class Publisher:
-	def __init__(self, node: Node, context: Context):
-		self._node = node  # type: Node
+	def __init__(self, context: Context, ip: str, port: int, host: str=None):
 		self._zmq = context  # type: Context
+		self.ip = ip  # type: str
+		self.port = port  # type: int
+		self.host = host  # type: Optional[str]
 		self._publisher = None  # type: Socket
 	
 	def publish(self, message: dict, slot: str=None):
 		if self._publisher is None:
-			ip, port, host = self._node.rslv('pub')
 			self._publisher = self._zmq.socket(zmq.PUB)
-			self._publisher.bind('tcp://{}:{}'.format(host or ip, port))
+			self._publisher.bind('tcp://{}:{}'.format(self.host or self.ip, self.port))
 		message = json.dumps(message)
 		self._publisher.send_multipart([(slot or '').encode('utf-8'), message.encode('utf-8')])
 		logger.debug('Message published at "%s"', slot)

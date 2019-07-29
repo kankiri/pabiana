@@ -64,6 +64,7 @@ class Node(abcs.Node):
 		self._poller.register(socket, zmq.POLLIN)
 	
 	def run(self, timeout: int=None, linger: int=1000):
+		original = timeout
 		self._goon = True
 		signal.signal(signal.SIGINT, self.stop)
 		try:
@@ -71,6 +72,10 @@ class Node(abcs.Node):
 				socks = self._poller.poll(timeout)
 				for sock, event in socks:
 						self._process(sock.socket_type, decoder(sock.recv_multipart()), self._subscribers.get(sock))
+						timeout = 0
+				if not socks:
+					self.proceed()
+					timeout = original
 		finally:
 			self._zmq.destroy(linger=linger)
 			logger.debug('Context destroyed')
@@ -78,6 +83,10 @@ class Node(abcs.Node):
 
 	@abstractmethod
 	def _process(self, interface: int, message: Sequence[str], source: str = None):
+		pass
+	
+	@abstractmethod
+	def proceed(self):
 		pass
 	
 	def stop(self, *args, **kwargs):

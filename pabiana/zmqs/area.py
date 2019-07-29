@@ -71,7 +71,6 @@ class Area(Node, abcs.Area):
 			slot = message[0]
 			message = json.loads(message[1])
 			self.process(source, message, slot)
-		self.proceed()
 	
 	# ------------- Trigger processing functions -------------
 	

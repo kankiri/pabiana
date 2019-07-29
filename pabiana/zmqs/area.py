@@ -49,22 +49,16 @@ class Area(Node, abcs.Area):
 		self._schedule_function = combined
 		return func
 	
-	def subscribe(self, clock_name: str=None, clock_slots: Iterable[str]=None, subscriptions: Dict[str, Any]={}):
+	def subscribe(self, **subscriptions: Optional[Iterable[str]]):
 		"""Subscribes this Area to the given Areas and optionally given Slots. Must be called before the Area is run.
 
 		Args:
-			clock_name: The name of the Area that is used as synchronizing Clock.
-			clock_slots: The slots of the Clock relevant to this Area.
 			subscriptions: A dictionary containing the relevant Areas names as keys and optionally the Slots as values.
 		"""
 		for area in subscriptions:  # type: str
 			init_full(self, area, subscriptions[area])
 			subscriptions[area] = {'slots': subscriptions[area]}
 
-		if clock_name is not None:
-			self.clock_name = clock_name
-			self.clock_slots = clock_slots
-			subscriptions[clock_name] = {'slots': clock_slots, 'buffer-length': 1}
 		self.setup(puller=True, subscriptions=subscriptions)
 	
 	def _process(self, interface: int, message: Sequence[str], source: str=None):
@@ -74,13 +68,10 @@ class Area(Node, abcs.Area):
 			del message['trigger']
 			self.comply(trigger_name, message)
 		else:
-			if source == self.clock_name:
-				logger.log(5, 'Tick')
-				self.proceed()
-			else:
-				slot = message[0]
-				message = json.loads(message[1])
-				self.process(source, message, slot)
+			slot = message[0]
+			message = json.loads(message[1])
+			self.process(source, message, slot)
+		self.proceed()
 	
 	# ------------- Trigger processing functions -------------
 	
@@ -132,7 +123,7 @@ class Area(Node, abcs.Area):
 	def alter(self, source: str=None, slot: str=None):
 		self._altered.add(self._processors[source][slot])
 	
-	# ------------- Clock processing functions -------------
+	# ------------- Loop processing functions -------------
 	
 	def activity(self, func: Callable) -> Callable:
 		self._active_function = func

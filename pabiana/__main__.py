@@ -35,28 +35,15 @@ def run(module_name, area_name, base_path, module_path, interfaces_path):
 	repo['base-path'] = base_path
 	repo['module-path'] = module_path
 
-	try:
-		mod = importlib.import_module(module_name)
-	except ImportError:
-		if module_name == 'def_clock' and area_name == 'clock':
-			area = create_clock(name=area_name, interfaces=repo['interfaces'])
-			area.run(timeout=500)
-			return
-		else:
-			raise
+	mod = importlib.import_module(module_name)
 
 	if hasattr(mod, 'premise'):
 		mod.premise()
 
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):
-			params = {
-				'clock_name': mod.config.get('clock-name'),
-				'clock_slots': mod.config.get('clock-slots')
-			}
-			if 'subscriptions' in mod.config:
-				params['subscriptions'] = mod.config['subscriptions']
-			mod.area.subscribe(**params)
+			subscriptions = mod.config.get('subscriptions', {})
+			mod.area.subscribe(**subscriptions)
 			if 'context-values' in mod.config:
 				mod.area.context.update(mod.config['context-values'])
 		mod.area.run()

@@ -14,8 +14,7 @@ def setup():
 		'area1-pub': {'ip': '130.0.0.2', 'port': 8281},
 		'area1-rcv': {'ip': '130.0.0.2', 'port': 8282},
 		'area2-pub': {'ip': '130.0.0.2', 'port': 8283, 'host': '0.0.0.0'},
-		'area2-rcv': {'ip': '130.0.0.2', 'port': 8284},
-		'clock100-pub': {'ip': '130.0.0.4', 'port': 8285}
+		'area2-rcv': {'ip': '130.0.0.2', 'port': 8284}
 	})
 
 
@@ -42,8 +41,6 @@ def test_node_rslv():
 	assert ip == '130.0.0.2' and port == 8281 and host is None
 	ip, port, host = node.rslv(name='area2', interface='pub')
 	assert ip == '130.0.0.2' and port == 8283 and host == '0.0.0.0'
-	ip, port, host = node.rslv(name='clock100', interface='pub')
-	assert ip == '130.0.0.4' and port == 8285 and host is None
 
 
 def test_area_init():
@@ -52,4 +49,3 @@ def test_area_init():
 
 	area = TestArea(name='area2', interfaces=interfaces)
 	assert isinstance(area.context, dict)
-	assert hasattr(area, 'clock_name') and hasattr(area, 'clock_slots')

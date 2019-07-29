@@ -19,13 +19,11 @@ def setup():
 		'area1-pub': {'ip': '130.0.0.2', 'port': 8281},
 		'area1-rcv': {'ip': '130.0.0.2', 'port': 8282},
 		'area2-pub': {'ip': '130.0.0.2', 'port': 8283, 'host': '0.0.0.0'},
-		'area2-rcv': {'ip': '130.0.0.2', 'port': 8284},
-		'clock100-pub': {'ip': '130.0.0.4', 'port': 8285}
+		'area2-rcv': {'ip': '130.0.0.2', 'port': 8284}
 	})
 	subscriptions.update({
 		'area1': {'slots': ['area1-slot1', 'area1-slot2']},
-		'area2': {'slots': None, 'buffer-length': 100},
-		'clock100': {'slots': [''], 'buffer-length': 1}
+		'area2': {'slots': None, 'buffer-length': 100}
 	})
 
 

@@ -17,8 +17,7 @@ def setup():
 		'area1-pub': {'ip': '130.0.0.2', 'port': 8281},
 		'area1-rcv': {'ip': '130.0.0.2', 'port': 8282},
 		'area2-pub': {'ip': '130.0.0.2', 'port': 8283, 'host': '0.0.0.0'},
-		'area2-rcv': {'ip': '130.0.0.2', 'port': 8284},
-		'clock100-pub': {'ip': '130.0.0.4', 'port': 8285}
+		'area2-rcv': {'ip': '130.0.0.2', 'port': 8284}
 	})
 	subscriptions.update({
 		'area1': ['area1-slot1', 'area1-slot2'],
@@ -92,7 +91,7 @@ def test_pulse():
 def test_alternation_process():
 	area = Area(name='test', interfaces=interfaces)
 	area.setup = lambda *args, **kwargs: None
-	area.subscribe(clock_name='clock100', subscriptions=subscriptions)
+	area.subscribe(**subscriptions)
 	test_vals = []
 
 	@area.alteration
@@ -119,7 +118,7 @@ def test_alternation_process():
 def test_alternation_alter():
 	area = Area(name='test', interfaces=interfaces)
 	area.setup = lambda *args, **kwargs: None
-	area.subscribe(clock_name='clock100', subscriptions=subscriptions)
+	area.subscribe(**subscriptions)
 	test_vals = []
 
 	@area.alteration

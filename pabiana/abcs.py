@@ -48,14 +48,10 @@ class Area(Node):
 	It can process Triggers and messages. It includes time synch mechanisms.
 
 	Attributes:
-		clock_name: Unique name of the Clock.
-		clock_slot: Name of the publishing Slot of the Clock signal.
 		context: Central store of the Areas non-volatile state.
 	"""
 	def __init__(self, name: str, interfaces: Interfaces):
 		super().__init__(name, interfaces)
-		self.clock_name = None  # type: str
-		self.clock_slots = None  # type: Set[str]
 		self.context = {}  # type: dict
 
 	@abstractmethod
@@ -184,7 +180,6 @@ class Area(Node):
 	def proceed(self):
 		"""Initiates the next round of this Areas procedures. Requested functions will be called.
 		
-		This method should be induced by a syncing Node, like a common Clock.
 		This method should not be called from within the Area.
 		"""
 		pass

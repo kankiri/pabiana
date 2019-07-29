@@ -21,7 +21,6 @@ class Node(abcs.Node):
 	"""
 	def __init__(self, name: str, interfaces: Interfaces):
 		super().__init__(name, interfaces)
-		self.routine = None  # type: Callable
 		self._goon = None  # type: bool
 		self._zmq = zmq.Context.instance()  # type: Context
 		self._poller = zmq.Poller()  # type: Poller
@@ -64,7 +63,7 @@ class Node(abcs.Node):
 	def poll(self, socket: Socket):
 		self._poller.register(socket, zmq.POLLIN)
 	
-	def run(self, timeout: int=1000, linger: int=1000):
+	def run(self, timeout: int=None, linger: int=1000):
 		self._goon = True
 		signal.signal(signal.SIGINT, self.stop)
 		try:
@@ -72,8 +71,6 @@ class Node(abcs.Node):
 				socks = self._poller.poll(timeout)
 				for sock, event in socks:
 						self._process(sock.socket_type, decoder(sock.recv_multipart()), self._subscribers.get(sock))
-				if self.routine is not None:
-					self.routine()
 		finally:
 			self._zmq.destroy(linger=linger)
 			logger.debug('Context destroyed')

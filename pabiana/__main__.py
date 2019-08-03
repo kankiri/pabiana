@@ -42,11 +42,12 @@ def run(module_name, area_name, base_path, module_path, interfaces_path):
 
 	if hasattr(mod, 'area'):
 		if hasattr(mod, 'config'):
+			timeout = mod.config.get('timeout')
 			subscriptions = mod.config.get('subscriptions', {})
 			mod.area.subscribe(**subscriptions)
 			if 'context-values' in mod.config:
 				mod.area.context.update(mod.config['context-values'])
-		mod.area.run()
+		mod.area.run(timeout=timeout)
 
 	elif hasattr(mod, 'runner'):
 		if hasattr(mod.runner, 'setup'):

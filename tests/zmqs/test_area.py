@@ -107,6 +107,7 @@ def test_alternation_process():
 		test_vals.append('area1')
 
 	area.process(source='area2', message={})
+	area.process(source='area2', message={}, slot='random')
 	area.process(source='area1', message={}, slot='area1-slot1')
 	area.process(source='area1', message={}, slot='area1-slot2')
 	area.proceed()

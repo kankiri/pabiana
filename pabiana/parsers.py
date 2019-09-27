@@ -17,6 +17,10 @@ def imprint_full(area: Area, source: str, message: MutableMapping, slot=None):
 	if slot is None:
 		area.context[source].appendleft(message)
 		area.context[source][0]['time-rcvd'] = area.time
+	elif type(area.context[source]) == deque:
+		area.context[source].appendleft(message)
+		area.context[source][0]['slot-rcvd'] = slot
+		area.context[source][0]['time-rcvd'] = area.time
 	else:
 		area.context[source][slot].appendleft(message)
 		area.context[source][slot][0]['time-rcvd'] = area.time

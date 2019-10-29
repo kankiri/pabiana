@@ -2,7 +2,8 @@ import argparse
 import importlib
 import os
 from os import path
-from pip._internal import main as pip_main
+import subprocess
+import sys
 
 
 from . import repo
@@ -23,7 +24,7 @@ def main():
 	requirements_path = path.join(base_path, module_name, 'requirements.txt')
 
 	if not arguments.fast and path.isfile(requirements_path):
-		pip_main(['install', '-U', '-r', requirements_path])
+		subprocess.call([sys.executable, '-m', 'pip', 'install', '-U', '-r', requirements_path])
 
 	run(module_name, area_name, base_path, module_path, interfaces_path)
 
